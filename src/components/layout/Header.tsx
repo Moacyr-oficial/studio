@@ -1,4 +1,4 @@
-import { UserCircle, MessageSquare } from 'lucide-react'; // Changed PanelLeft to MessageSquare
+import { UserCircle, Code } from 'lucide-react'; // Changed MessageSquare to Code
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export function Header() {
@@ -7,7 +7,7 @@ export function Header() {
       <div className="container mx-auto flex items-center justify-between max-w-3xl">
         <div className="flex items-center gap-2">
           <SidebarTrigger className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground">
-            <MessageSquare className="h-6 w-6" /> {/* Changed PanelLeft to MessageSquare */}
+            <Code className="h-6 w-6" /> {/* Changed MessageSquare to Code */}
           </SidebarTrigger>
           <h1 className="text-xl font-headline font-semibold tracking-tight">
             bedrock <span className="text-primary">aí</span>
