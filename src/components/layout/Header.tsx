@@ -1,13 +1,13 @@
-import { UserCircle, MessageSquare } from 'lucide-react';
+import { UserCircle, PanelLeft } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export function Header() {
   return (
-    <header className="py-3 px-4 md:px-6 sticky top-0 bg-background/80 backdrop-blur-md z-30"> {/* Reduced z-index below sidebar */}
-      <div className="container mx-auto flex items-center justify-between max-w-3xl"> {/* Constrain width like chat */}
+    <header className="py-3 px-4 md:px-6 sticky top-0 bg-background/80 backdrop-blur-md z-30">
+      <div className="container mx-auto flex items-center justify-between max-w-3xl">
         <div className="flex items-center gap-2">
           <SidebarTrigger className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground">
-            <MessageSquare className="h-6 w-6" />
+            <PanelLeft className="h-6 w-6" />
           </SidebarTrigger>
           <h1 className="text-xl font-headline font-semibold tracking-tight">
             bedrock <span className="text-primary">aí</span>
