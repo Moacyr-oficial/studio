@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, type FormEvent, useRef, useEffect } from 'react';
@@ -23,7 +24,11 @@ const promptSuggestions = [
   "Generate a simple sword item",
 ];
 
-export function ChatInterface() { // Renamed from CodeGenerator to ChatInterface
+interface ChatInterfaceProps {
+  resetKey?: number; // Prop to trigger chat reset
+}
+
+export function ChatInterface({ resetKey }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -41,19 +46,35 @@ export function ChatInterface() { // Renamed from CodeGenerator to ChatInterface
 
   useEffect(() => {
     inputRef.current?.focus();
-  }, []);
+  }, [showWelcome]); // Focus when welcome screen hides or chat is active
 
+  // Effect to reset chat when resetKey changes
+  useEffect(() => {
+    if (resetKey !== undefined && resetKey > 0) { // Check if resetKey is provided and greater than initial
+      setMessages([]);
+      setInputValue('');
+      setIsLoading(false);
+      setError(null);
+      setShowWelcome(true);
+      // Do not focus input here, let the other useEffect handle it based on showWelcome
+    }
+  }, [resetKey]);
+  
   const handleSuggestionClick = (suggestion: string) => {
-    setInputValue(suggestion);
+    // Directly submit the suggestion
+    setShowWelcome(false); // Ensure welcome is hidden
+    handleSubmit(suggestion);
     inputRef.current?.focus();
   };
   
-  const handleSubmit = async (event?: FormEvent<HTMLFormElement> | string) => {
-    if (typeof event !== 'string') {
-      event?.preventDefault();
+  const handleSubmit = async (eventOrMessage?: FormEvent<HTMLFormElement> | string) => {
+    let currentMessage = '';
+    if (typeof eventOrMessage === 'string') {
+      currentMessage = eventOrMessage;
+    } else {
+      eventOrMessage?.preventDefault();
+      currentMessage = inputValue;
     }
-    
-    const currentMessage = typeof event === 'string' ? event : inputValue;
 
     if (!currentMessage.trim()) return;
     if (showWelcome) setShowWelcome(false);
@@ -63,19 +84,26 @@ export function ChatInterface() { // Renamed from CodeGenerator to ChatInterface
       role: 'user',
       content: currentMessage,
     };
+    
+    // Use a functional update for messages to ensure we have the latest state
     setMessages((prevMessages) => [...prevMessages, userMessage]);
-    if (typeof event !== 'string') setInputValue('');
+
+    if (typeof eventOrMessage !== 'string') { // Clear input only if it was from the form
+        setInputValue('');
+    }
     setIsLoading(true);
     setError(null);
 
     try {
-      const history = messages.map(msg => ({ // Use current messages array before adding userMessage for history
+      // Create history from messages *before* adding the current user message
+      // This ensures history sent to AI is up to the point *before* this new message
+      const historyForAI = messages.map(msg => ({
         role: msg.role,
         parts: [{ text: msg.content }],
       }));
       
       const input: ChatInput = { 
-        history: history,
+        history: historyForAI,
         message: userMessage.content 
       };
       const result = await invokeChat(input);
@@ -102,12 +130,14 @@ export function ChatInterface() { // Renamed from CodeGenerator to ChatInterface
       setMessages((prevMessages) => [...prevMessages, aiErrorMessage]);
     } finally {
       setIsLoading(false);
-      inputRef.current?.focus();
+      if (typeof eventOrMessage !== 'string' || messages.length === 0) { // Refocus unless it was a programmatic suggestion submission on empty chat
+        inputRef.current?.focus();
+      }
     }
   };
 
   return (
-    <div className="flex flex-col h-full flex-grow w-full max-w-3xl mx-auto pb-[88px]"> {/* Added pb for input bar */}
+    <div className="flex flex-col h-full flex-grow w-full max-w-3xl mx-auto pb-[88px]">
       {showWelcome && messages.length === 0 && (
         <div className="flex-grow flex flex-col items-center justify-center p-6 text-center">
           <h1 className="text-5xl font-bold mb-4">
@@ -119,16 +149,13 @@ export function ChatInterface() { // Renamed from CodeGenerator to ChatInterface
             </span>
           </h1>
           <p className="text-muted-foreground text-lg mb-12">How can I help you with Minecraft Bedrock addons today?</p>
-          <div className="grid grid-cols-2 gap-3 w-full max-w-md">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
             {promptSuggestions.map((suggestion) => (
               <Button
                 key={suggestion}
                 variant="outline"
                 className="bg-secondary hover:bg-muted text-left justify-start p-4 h-auto text-sm rounded-xl border-muted"
-                onClick={() => {
-                  setShowWelcome(false);
-                  handleSubmit(suggestion);
-                }}
+                onClick={() => handleSuggestionClick(suggestion)}
               >
                 {suggestion}
               </Button>
@@ -158,8 +185,10 @@ export function ChatInterface() { // Renamed from CodeGenerator to ChatInterface
                 )}
                 dangerouslySetInnerHTML={{ __html: message.content.replace(/```(\w+)?\n([\s\S]*?)```/g, (_match, lang, code) => {
                   const languageClass = lang ? `language-${lang}` : '';
-                  return `<pre class="${languageClass}"><code class="${languageClass}">${code.trim()}</code></pre>`;
-                }).replace(/\n/g, '<br />') }}
+                  // Ensure code is HTML-escaped before putting into pre/code
+                  const escapedCode = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                  return `<pre class="${languageClass}"><code class="${languageClass}">${escapedCode.trim()}</code></pre>`;
+                }).replace(/(?<!<br\s*\/?>)\n/g, '<br />') }} // Avoid double <br /> if already present
               />
               {message.role === 'user' && <UserCircle className="h-8 w-8 ml-3 mt-1 text-muted-foreground flex-shrink-0" />}
             </div>
@@ -186,11 +215,11 @@ export function ChatInterface() { // Renamed from CodeGenerator to ChatInterface
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-background z-10">
+      <div className="fixed bottom-0 left-0 right-0 bg-background z-10"> {/* Ensure this doesn't get overlapped by sidebar inset padding */}
         <div className="max-w-3xl mx-auto p-3 md:p-4">
-          {!showWelcome && messages.length > 0 && messages.length < 3 && ( // Show suggestions only if chat started and not too long
+          {!showWelcome && messages.length > 0 && messages.length < 5 && !isLoading && ( 
             <div className="flex gap-2 mb-3 overflow-x-auto pb-2 no-scrollbar">
-              {promptSuggestions.slice(0,2).map((suggestion) => (
+              {promptSuggestions.filter(s => !messages.some(m => m.content === s)).slice(0,2).map((suggestion) => (
                 <Button
                   key={suggestion}
                   variant="outline"

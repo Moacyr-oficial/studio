@@ -40,6 +40,16 @@
     --chart-3: 45 90% 50%;
     --chart-4: 150 80% 40%;
     --chart-5: 210 70% 55%;
+
+    /* Sidebar variables */
+    --sidebar-background: 220 13% 11%; /* Slightly darker than main background */
+    --sidebar-foreground: 0 0% 88%;
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
+    --sidebar-accent: 220 13% 19%; /* Slightly darker than secondary for hover */
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 220 13% 20%;
+    --sidebar-ring: hsl(var(--ring));
   }
 
   /* Ensure dark theme variables are used by default without needing .dark class */
@@ -69,6 +79,16 @@
     --chart-3: 45 90% 50%;
     --chart-4: 150 80% 40%;
     --chart-5: 210 70% 55%;
+
+    /* Sidebar variables for .dark explicitly, though already default */
+    --sidebar-background: 220 13% 11%;
+    --sidebar-foreground: 0 0% 88%;
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
+    --sidebar-accent: 220 13% 19%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 220 13% 20%;
+    --sidebar-ring: hsl(var(--ring));
   }
 }
 
