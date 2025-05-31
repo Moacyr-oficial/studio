@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Send, AlertTriangle, Bot, PlusCircle, Image as ImageIcon, Mic, Sparkles, UserCircle, MessageSquare } from 'lucide-react';
+import { Loader2, Send, AlertTriangle, Bot, PlusCircle, Image as ImageIcon, Mic, Sparkles, UserCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -46,23 +46,20 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
 
   useEffect(() => {
     inputRef.current?.focus();
-  }, [showWelcome]); // Focus when welcome screen hides or chat is active
+  }, [showWelcome]); 
 
-  // Effect to reset chat when resetKey changes
   useEffect(() => {
-    if (resetKey !== undefined && resetKey > 0) { // Check if resetKey is provided and greater than initial
+    if (resetKey !== undefined && resetKey > 0) { 
       setMessages([]);
       setInputValue('');
       setIsLoading(false);
       setError(null);
       setShowWelcome(true);
-      // Do not focus input here, let the other useEffect handle it based on showWelcome
     }
   }, [resetKey]);
   
   const handleSuggestionClick = (suggestion: string) => {
-    // Directly submit the suggestion
-    setShowWelcome(false); // Ensure welcome is hidden
+    setShowWelcome(false); 
     handleSubmit(suggestion);
     inputRef.current?.focus();
   };
@@ -85,18 +82,15 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       content: currentMessage,
     };
     
-    // Use a functional update for messages to ensure we have the latest state
     setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-    if (typeof eventOrMessage !== 'string') { // Clear input only if it was from the form
+    if (typeof eventOrMessage !== 'string') {
         setInputValue('');
     }
     setIsLoading(true);
     setError(null);
 
     try {
-      // Create history from messages *before* adding the current user message
-      // This ensures history sent to AI is up to the point *before* this new message
       const historyForAI = messages.map(msg => ({
         role: msg.role,
         parts: [{ text: msg.content }],
@@ -130,14 +124,20 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       setMessages((prevMessages) => [...prevMessages, aiErrorMessage]);
     } finally {
       setIsLoading(false);
-      if (typeof eventOrMessage !== 'string' || messages.length === 0) { // Refocus unless it was a programmatic suggestion submission on empty chat
+      if (typeof eventOrMessage !== 'string' || messages.length === 0) { 
         inputRef.current?.focus();
       }
     }
   };
 
+  // Calculate dynamic bottom padding based on approximate input bar height
+  // Form p-1.5 (approx 6px top/bottom = 12px) + button h-8 (32px) = ~44px
+  // Outer container p-3 (12px top/bottom = 24px) = ~68px. Use 72px for some buffer.
+  const inputBarHeight = "pb-[72px]";
+
+
   return (
-    <div className="flex flex-col h-full flex-grow w-full max-w-3xl mx-auto pb-[80px]"> {/* Adjusted pb for thinner bar */}
+    <div className={cn("flex flex-col h-full flex-grow w-full max-w-3xl mx-auto", inputBarHeight)}>
       {showWelcome && messages.length === 0 && (
         <div className="flex-grow flex flex-col items-center justify-center p-6 text-center">
           <h1 className="text-5xl font-bold mb-4">
@@ -185,10 +185,9 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
                 )}
                 dangerouslySetInnerHTML={{ __html: message.content.replace(/```(\w+)?\n([\s\S]*?)```/g, (_match, lang, code) => {
                   const languageClass = lang ? `language-${lang}` : '';
-                  // Ensure code is HTML-escaped before putting into pre/code
                   const escapedCode = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
                   return `<pre class="${languageClass}"><code class="${languageClass}">${escapedCode.trim()}</code></pre>`;
-                }).replace(/(?<!<br\s*\/?>)\n/g, '<br />') }} // Avoid double <br /> if already present
+                }).replace(/(?<!<br\s*\/?>)\n/g, '<br />') }} 
               />
               {message.role === 'user' && <UserCircle className="h-8 w-8 ml-3 mt-1 text-muted-foreground flex-shrink-0" />}
             </div>
@@ -206,7 +205,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
 
 
       {error && (
-        <div className="p-4 fixed bottom-[80px] left-1/2 transform -translate-x-1/2 w-full max-w-3xl z-10"> {/* Adjusted bottom for thinner bar */}
+        <div className={cn("p-4 fixed left-1/2 transform -translate-x-1/2 w-full max-w-3xl z-10", `bottom-[${parseInt(inputBarHeight.replace('pb-[','').replace('px]',''))}px]` )}>
           <Alert variant="destructive" className="shadow-md">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
@@ -215,7 +214,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-background z-10"> {/* Ensure this doesn't get overlapped by sidebar inset padding */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background z-10">
         <div className="max-w-3xl mx-auto p-3 md:p-4">
           {!showWelcome && messages.length > 0 && messages.length < 5 && !isLoading && ( 
             <div className="flex gap-2 mb-3 overflow-x-auto pb-2 no-scrollbar">

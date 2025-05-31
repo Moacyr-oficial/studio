@@ -2,7 +2,7 @@
 "use client";
 
 import { Button } from '@/components/ui/button';
-import { PlusCircle, History, Settings2, LogOut, Rabbit, ToyBrick, Map as MapIcon } from 'lucide-react';
+import { PlusCircle, Rabbit, ToyBrick, Map as MapIcon, Settings2, LogOut } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -89,7 +89,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
       <SidebarSeparator className="group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:my-2 group-data-[collapsible=icon]:w-5/6" />
       
       <SidebarContent className="flex-grow p-0">
-        <div className="px-2 py-1">
+        <div className="px-2 py-1"> {/* Reduced py for compactness */}
           <SidebarGroup>
              <SidebarGroupLabel className="px-2 mb-1 text-xs uppercase text-muted-foreground group-data-[collapsible=icon]:hidden">
                 RECENT
@@ -103,6 +103,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
                         tooltip={sidebarState === 'collapsed' ? item.title : undefined}
                     >
                     <span className="truncate group-data-[collapsible=icon]:hidden">{item.title}</span>
+                    {/* Display initials when collapsed */}
                     <span className="hidden group-data-[collapsible=icon]:inline-block text-xs">
                         {item.title.substring(0,2).toUpperCase()}
                     </span>
