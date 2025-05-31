@@ -1,5 +1,5 @@
 import { AppLayout } from '@/components/layout/AppLayout';
-import { ChatInterface } from '@/components/features/ChatInterface'; // Renamed CodeGenerator to ChatInterface for clarity
+import { ChatInterface } from '@/components/features/CodeGenerator'; // Corrected import path
 
 export default function HomePage() {
   return (
