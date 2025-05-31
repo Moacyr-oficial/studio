@@ -2,7 +2,7 @@
 "use client";
 
 import { Button } from '@/components/ui/button';
-import { PlusCircle, History, Settings2, LogOut } from 'lucide-react';
+import { PlusCircle, History, Settings2, LogOut, Rabbit, ToyBrick, MapIcon as Map } from 'lucide-react'; // Added Rabbit, ToyBrick, Map
 import {
   Sidebar,
   SidebarContent,
@@ -38,13 +38,23 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
     {id: "4", title: "Generate a simple sword item"},
   ];
 
+  const specializedChats = [
+    { id: "entity-gen", title: "Entity Generator", icon: Rabbit, action: handleNewChatClick },
+    { id: "behavior-helper", title: "Behavior Pack Helper", icon: ToyBrick, action: handleNewChatClick },
+    { id: "world-builder", title: "World Builder", icon: Map, action: handleNewChatClick },
+  ];
+
   return (
-    <Sidebar side="left" collapsible="icon" variant="sidebar" className="z-40 border-r-0">
+    <Sidebar 
+      side="left" 
+      collapsible="icon" 
+      variant="sidebar" 
+      className="z-40 border-r-0 rounded-r-xl" // Removed border, added rounded-r-xl
+    >
       <SidebarHeader className="p-3 text-center group-data-[collapsible=icon]:hidden">
         <h2 className="font-headline text-lg font-semibold">History</h2>
       </SidebarHeader>
       
-      {/* New Chat button container, allows for icon-only state centering */}
       <div className="p-2 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:mt-2 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
         <SidebarMenuButton 
             variant="ghost" 
@@ -55,6 +65,25 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
            <PlusCircle className="h-5 w-5 shrink-0" />
            <span className="group-data-[collapsible=icon]:hidden">New Chat</span>
         </SidebarMenuButton>
+      </div>
+
+      {/* Specialized Chat Options */}
+      <div className="px-2 group-data-[collapsible=icon]:p-0">
+        <SidebarMenu>
+          {specializedChats.map((chat) => (
+            <SidebarMenuItem key={chat.id}>
+              <SidebarMenuButton
+                variant="ghost"
+                className="w-full justify-start gap-2 group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:p-0"
+                onClick={chat.action}
+                tooltip={sidebarState === 'collapsed' ? chat.title : undefined}
+              >
+                <chat.icon className="h-5 w-5 shrink-0" />
+                <span className="group-data-[collapsible=icon]:hidden">{chat.title}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
       </div>
 
       <SidebarSeparator className="group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:my-2 group-data-[collapsible=icon]:w-5/6" />
