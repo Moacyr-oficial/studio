@@ -24,6 +24,8 @@ interface AccountSettingsDialogProps {
 
 export function AccountSettingsDialog({ isOpen, onOpenChange }: AccountSettingsDialogProps) {
   const [name, setName] = useState("Current User Name"); // Placeholder name
+  // Placeholder for avatar image state if dynamic updates are needed
+  // const [avatarSrc, setAvatarSrc] = useState("https://placehold.co/120x120.png");
 
   const handleSave = () => {
     // Placeholder for save logic
@@ -31,12 +33,18 @@ export function AccountSettingsDialog({ isOpen, onOpenChange }: AccountSettingsD
     onOpenChange(false); // Close dialog on save
   };
 
+  const handlePhotoChange = () => {
+    // Placeholder for photo change logic
+    console.log("Change photo clicked");
+    // Example: open file input, upload, update avatarSrc state
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] rounded-xl shadow-2xl">
+      <DialogContent className="sm:max-w-[480px] rounded-xl shadow-2xl bg-background">
         <DialogHeader className="pt-2">
-          <DialogTitle className="text-2xl font-semibold">Account Settings</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-2xl font-semibold text-foreground">Account Settings</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             Manage your profile and preferences.
           </DialogDescription>
         </DialogHeader>
@@ -46,27 +54,27 @@ export function AccountSettingsDialog({ isOpen, onOpenChange }: AccountSettingsD
               <AvatarImage src="https://placehold.co/120x120.png" alt="User avatar" data-ai-hint="profile person" />
               <AvatarFallback>{name.substring(0,1).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <Button variant="outline" className="rounded-lg text-sm">
+            <Button variant="outline" className="rounded-lg text-sm border-border hover:bg-accent hover:text-accent-foreground" onClick={handlePhotoChange}>
               <ImageUp className="mr-2 h-4 w-4" />
               Change Photo
             </Button>
           </div>
 
           <div className="grid gap-2 px-4">
-            <Label htmlFor="name" className="text-left font-medium">
+            <Label htmlFor="name" className="text-left font-medium text-foreground">
               Display Name
             </Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="rounded-lg text-base"
+              className="rounded-lg text-base border-input bg-secondary text-secondary-foreground placeholder:text-muted-foreground focus:ring-ring"
               placeholder="Enter your name"
             />
           </div>
 
           <div className="px-4">
-            <Button variant="outline" className="w-full justify-start gap-3 rounded-lg text-base py-6">
+            <Button variant="outline" className="w-full justify-start gap-3 rounded-lg text-base py-6 border-border hover:bg-accent hover:text-accent-foreground text-foreground">
               <SettingsIcon className="h-5 w-5 text-muted-foreground" />
               <span>General Settings</span>
             </Button>
@@ -74,7 +82,7 @@ export function AccountSettingsDialog({ isOpen, onOpenChange }: AccountSettingsD
         </div>
         <DialogFooter className="pb-4 px-6">
           <DialogClose asChild>
-            <Button type="button" variant="outline" className="rounded-lg text-base px-6 py-5">
+            <Button type="button" variant="outline" className="rounded-lg text-base px-6 py-5 border-border hover:bg-accent hover:text-accent-foreground text-foreground">
               Cancel
             </Button>
           </DialogClose>
