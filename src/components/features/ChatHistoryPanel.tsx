@@ -2,7 +2,7 @@
 "use client";
 
 import { Button } from '@/components/ui/button';
-import { PlusCircle, History, Settings2, LogOut, Rabbit, ToyBrick, MapIcon as Map } from 'lucide-react'; // Added Rabbit, ToyBrick, Map
+import { PlusCircle, History, Settings2, LogOut, Rabbit, ToyBrick, Map as MapIcon } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -41,7 +41,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
   const specializedChats = [
     { id: "entity-gen", title: "Entity Generator", icon: Rabbit, action: handleNewChatClick },
     { id: "behavior-helper", title: "Behavior Pack Helper", icon: ToyBrick, action: handleNewChatClick },
-    { id: "world-builder", title: "World Builder", icon: Map, action: handleNewChatClick },
+    { id: "world-builder", title: "World Builder", icon: MapIcon, action: handleNewChatClick },
   ];
 
   return (
@@ -49,7 +49,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
       side="left" 
       collapsible="icon" 
       variant="sidebar" 
-      className="z-40 border-r-0 rounded-r-2xl" // Updated to rounded-r-2xl
+      className="z-40 border-r-0 rounded-r-2xl"
     >
       <SidebarHeader className="p-3 text-center group-data-[collapsible=icon]:hidden">
         <h2 className="font-headline text-lg font-semibold">Conversation</h2> 
