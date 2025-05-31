@@ -130,10 +130,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
     }
   };
 
-  // Calculate dynamic bottom padding based on approximate input bar height
-  // Form p-1.5 (approx 6px top/bottom = 12px) + button h-8 (32px) = ~44px
-  // Outer container p-3 (12px top/bottom = 24px) = ~68px. Use 72px for some buffer.
-  const inputBarHeight = "pb-[72px]";
+  const inputBarHeight = "pb-[72px]"; // Adjusted from pb-[80px] previously
 
 
   return (
@@ -165,12 +162,12 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       )}
 
       {!showWelcome && (
-         <ScrollArea ref={scrollAreaRef} className="flex-grow p-4 md:p-6 space-y-6">
+         <ScrollArea ref={scrollAreaRef} className="flex-grow p-4 md:p-6">
           {messages.map((message) => (
             <div
               key={message.id}
               className={cn(
-                "flex w-full items-start",
+                "flex w-full items-start mb-6", // Added mb-6 for spacing
                 message.role === 'user' ? 'justify-end' : 'justify-start'
               )}
             >
@@ -193,7 +190,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
             </div>
           ))}
            {isLoading && messages[messages.length -1]?.role === 'user' && (
-            <div className="flex justify-start items-start">
+            <div className="flex justify-start items-start mt-6"> {/* Added mt-6 for spacing */}
                 <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />
                 <div className="max-w-[80%] p-3.5 rounded-2xl shadow-sm bg-secondary text-secondary-foreground rounded-bl-none flex items-center">
                     <Loader2 className="h-5 w-5 animate-spin mr-2 text-primary" /> Thinking...
@@ -217,7 +214,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       <div className="fixed bottom-0 left-0 right-0 bg-background z-10">
         <div className="max-w-3xl mx-auto p-3 md:p-4">
           {!showWelcome && messages.length > 0 && messages.length < 5 && !isLoading && ( 
-            <div className="flex gap-2 mb-3 overflow-x-auto pb-2 no-scrollbar">
+            <div className="flex gap-2 mt-6 mb-4 overflow-x-auto pb-2 no-scrollbar"> {/* Added mt-6, changed mb-3 to mb-4 */}
               {promptSuggestions.filter(s => !messages.some(m => m.content === s)).slice(0,2).map((suggestion) => (
                 <Button
                   key={suggestion}
