@@ -15,7 +15,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ImageUp, Settings as SettingsIcon } from 'lucide-react';
+import { ImageUp, Settings as SettingsIcon, Loader2 } from 'lucide-react'; // Added Loader2
+import { useToast } from '@/hooks/use-toast';
 
 interface AccountSettingsDialogProps {
   isOpen: boolean;
@@ -23,13 +24,24 @@ interface AccountSettingsDialogProps {
 }
 
 export function AccountSettingsDialog({ isOpen, onOpenChange }: AccountSettingsDialogProps) {
-  const [name, setName] = useState("Current User Name"); // Placeholder name
-  // Placeholder for avatar image state if dynamic updates are needed
+  const [name, setName] = useState("Current User Name");
+  const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
   // const [avatarSrc, setAvatarSrc] = useState("https://placehold.co/120x120.png");
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setIsSaving(true);
     // Placeholder for save logic
     console.log("Saving account settings:", { name });
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    setIsSaving(false);
+    toast({
+      title: "Settings Saved",
+      description: "Your account settings have been updated.",
+    });
     onOpenChange(false); // Close dialog on save
   };
 
@@ -37,6 +49,11 @@ export function AccountSettingsDialog({ isOpen, onOpenChange }: AccountSettingsD
     // Placeholder for photo change logic
     console.log("Change photo clicked");
     // Example: open file input, upload, update avatarSrc state
+    toast({
+      title: "Feature not implemented",
+      description: "Changing photo is not yet available.",
+      variant: "default",
+    });
   };
 
   return (
@@ -70,11 +87,12 @@ export function AccountSettingsDialog({ isOpen, onOpenChange }: AccountSettingsD
               onChange={(e) => setName(e.target.value)}
               className="rounded-lg text-base border-input bg-secondary text-secondary-foreground placeholder:text-muted-foreground focus:ring-ring"
               placeholder="Enter your name"
+              disabled={isSaving}
             />
           </div>
 
           <div className="px-4">
-            <Button variant="outline" className="w-full justify-start gap-3 rounded-lg text-base py-6 border-border hover:bg-accent hover:text-accent-foreground text-foreground">
+            <Button variant="outline" className="w-full justify-start gap-3 rounded-lg text-base py-6 border-border hover:bg-accent hover:text-accent-foreground text-foreground" disabled={isSaving}>
               <SettingsIcon className="h-5 w-5 text-muted-foreground" />
               <span>General Settings</span>
             </Button>
@@ -82,12 +100,16 @@ export function AccountSettingsDialog({ isOpen, onOpenChange }: AccountSettingsD
         </div>
         <DialogFooter className="pb-4 px-6">
           <DialogClose asChild>
-            <Button type="button" variant="outline" className="rounded-lg text-base px-6 py-5 border-border hover:bg-accent hover:text-accent-foreground text-foreground">
+            <Button type="button" variant="outline" className="rounded-lg text-base px-6 py-5 border-border hover:bg-accent hover:text-accent-foreground text-foreground" disabled={isSaving}>
               Cancel
             </Button>
           </DialogClose>
-          <Button type="submit" onClick={handleSave} className="rounded-lg text-base px-6 py-5 bg-primary text-primary-foreground hover:bg-primary/90">
-            Save Changes
+          <Button type="submit" onClick={handleSave} className="rounded-lg text-base px-6 py-5 bg-primary text-primary-foreground hover:bg-primary/90 min-w-[140px]" disabled={isSaving}>
+            {isSaving ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
