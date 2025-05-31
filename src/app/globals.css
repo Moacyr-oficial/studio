@@ -4,81 +4,71 @@
 
 @layer base {
   :root {
-    --background: 0 0% 95%; /* #F2F2F2 light gray */
-    --foreground: 0 0% 13%; /* #212121 dark gray */
-    --card: 0 0% 100%; /* #FFFFFF white */
-    --card-foreground: 0 0% 13%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 13%;
-    --primary: 217 89% 61%; /* #4285F4 blue */
-    --primary-foreground: 0 0% 100%; /* White text on primary */
-    --secondary: 0 0% 90%; /* Slightly darker gray for secondary elements */
-    --secondary-foreground: 0 0% 13%;
-    --muted: 0 0% 90%;
-    --muted-foreground: 0 0% 40%; /* Adjusted for better contrast on light gray */
-    --accent: 217 89% 61%; /* #4285F4 blue */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 5 69% 53%; /* #DB4437 red */
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 85%; /* Slightly darker border for visibility */
-    --input: 0 0% 100%; /* White input background */
-    --ring: 217 89% 61%; /* Blue for focus rings */
-    --radius: 0.5rem;
+    --background: 220 13% 10%; /* Very dark desaturated blue/gray */
+    --foreground: 0 0% 90%; /* Light gray */
 
-    /* Chart colors can be adjusted if charts are used, using accent colors */
-    --chart-1: 217 89% 61%; /* Blue */
-    --chart-2: 5 69% 53%;   /* Red */
-    --chart-3: 45 93% 48%;  /* Yellow */
-    --chart-4: 150 82% 35%; /* Green */
-    --chart-5: 210 70% 50%; /* A generic blue */
+    --card: 220 13% 13%;
+    --card-foreground: 0 0% 90%;
 
-    /* Sidebar variables - kept for completeness, but app uses tabs */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
+    --popover: 220 13% 7%; /* Even darker for popovers */
+    --popover-foreground: 0 0% 90%;
 
-  .dark {
-    /* Dark theme not specified, but good to have placeholders or a basic version */
-    --background: 0 0% 13%; /* Dark gray */
-    --foreground: 0 0% 95%; /* Light gray */
-    --card: 0 0% 10%; /* Darker card */
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 217 89% 61%; /* Blue */
+    --primary: 217 89% 61%; /* Existing blue for active elements/accents */
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 20%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 60%;
+
+    --secondary: 220 13% 18%; /* For input bar and other secondary surfaces */
+    --secondary-foreground: 0 0% 85%;
+
+    --muted: 220 13% 25%; /* For less prominent elements, borders */
+    --muted-foreground: 0 0% 65%; /* Muted text */
+
     --accent: 217 89% 61%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 5 69% 53%; /* Red */
+
+    --destructive: 0 60% 50%; /* A red that fits dark theme */
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 25%;
-    --input: 0 0% 20%;
+
+    --border: 220 13% 25%; /* Subtle borders */
+    --input: 220 13% 16%; /* Input field background, slightly darker than secondary */
     --ring: 217 89% 61%;
 
+    --radius: 0.5rem;
+
+    /* Chart colors (less relevant for this design but kept for completeness) */
     --chart-1: 217 80% 65%;
-    --chart-2: 5 70% 55%;
+    --chart-2: 0 70% 55%;
     --chart-3: 45 90% 50%;
     --chart-4: 150 80% 40%;
     --chart-5: 210 70% 55%;
+  }
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+  /* Ensure dark theme variables are used by default without needing .dark class */
+  .dark {
+    --background: 220 13% 10%;
+    --foreground: 0 0% 90%;
+    --card: 220 13% 13%;
+    --card-foreground: 0 0% 90%;
+    --popover: 220 13% 7%;
+    --popover-foreground: 0 0% 90%;
+    --primary: 217 89% 61%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 13% 18%;
+    --secondary-foreground: 0 0% 85%;
+    --muted: 220 13% 25%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 217 89% 61%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 25%;
+    --input: 220 13% 16%;
+    --ring: 217 89% 61%;
+
+    --chart-1: 217 80% 65%;
+    --chart-2: 0 70% 55%;
+    --chart-3: 45 90% 50%;
+    --chart-4: 150 80% 40%;
+    --chart-5: 210 70% 55%;
   }
 }
 
