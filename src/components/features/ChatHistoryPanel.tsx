@@ -12,7 +12,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
+  // SidebarGroupLabel, // Replaced with custom div for "RECENT"
   SidebarSeparator,
   useSidebar,
 } from '@/components/ui/sidebar';
@@ -45,19 +45,19 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
   ];
 
   return (
-    <Sidebar 
-      side="left" 
-      collapsible="icon" 
-      variant="sidebar" 
+    <Sidebar
+      side="left"
+      collapsible="icon"
+      variant="sidebar"
       className="z-40 border-r-0 rounded-r-2xl"
     >
-      <SidebarHeader className="p-3 text-center group-data-[collapsible=icon]:hidden">
-        <h2 className="font-headline text-lg font-semibold">Conversation</h2> 
+      <SidebarHeader className="px-3 pt-3 pb-2 text-center group-data-[collapsible=icon]:hidden">
+        <h2 className="font-headline text-lg font-semibold">Conversation</h2>
       </SidebarHeader>
-      
-      <div className="p-2 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:mt-2 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
-        <SidebarMenuButton 
-            variant="ghost" 
+
+      <div className="px-2 pt-2 pb-1 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:mt-2 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
+        <SidebarMenuButton
+            variant="ghost"
             className="w-full justify-start gap-2 group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:p-0"
             onClick={handleNewChatClick}
             tooltip={sidebarState === 'collapsed' ? 'New Chat' : undefined}
@@ -68,7 +68,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
       </div>
 
       {/* Specialized Chat Options */}
-      <div className="px-2 group-data-[collapsible=icon]:p-0">
+      <div className="px-2 pb-1 group-data-[collapsible=icon]:p-0">
         <SidebarMenu>
           {specializedChats.map((chat) => (
             <SidebarMenuItem key={chat.id}>
@@ -87,18 +87,18 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
       </div>
 
       <SidebarSeparator className="group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:my-2 group-data-[collapsible=icon]:w-5/6" />
-      
+
       <SidebarContent className="flex-grow p-0">
-        <div className="px-2 py-1"> {/* Reduced py for compactness */}
+        <div className="px-2 pt-0 pb-1">
           <SidebarGroup>
-             <SidebarGroupLabel className="px-2 mb-1 text-xs uppercase text-muted-foreground group-data-[collapsible=icon]:hidden">
+             <div className="px-2 pt-2 pb-1 text-xs font-normal tracking-wider text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden">
                 RECENT
-             </SidebarGroupLabel>
+             </div>
             <SidebarMenu>
                 {mockHistory.map((item) => (
                 <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton 
-                        className="font-normal text-sm h-auto py-1.5 px-2 w-full justify-start group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:p-0" 
+                    <SidebarMenuButton
+                        className="font-normal text-sm h-auto py-1.5 px-2 w-full justify-start group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:p-0"
                         variant="ghost"
                         tooltip={sidebarState === 'collapsed' ? item.title : undefined}
                     >
@@ -114,10 +114,10 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
           </SidebarGroup>
         </div>
       </SidebarContent>
-      
+
       <SidebarSeparator className="group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:my-2 group-data-[collapsible=icon]:w-5/6"/>
-      
-      <SidebarFooter className="p-2 flex flex-col gap-1">
+
+      <SidebarFooter className="px-2 pt-1 pb-2 flex flex-col gap-1">
          <SidebarMenuButton variant="ghost" className="w-full justify-start gap-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:p-0" tooltip={sidebarState === 'collapsed' ? 'Settings' : undefined}>
             <Settings2 className="size-4 shrink-0" />
             <span className="group-data-[collapsible=icon]:hidden">Settings</span>
