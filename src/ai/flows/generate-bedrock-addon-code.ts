@@ -1,47 +1,68 @@
 'use server';
 /**
- * @fileOverview A Bedrock Edition addon code generator AI agent.
+ * @fileOverview A conversational AI agent for Minecraft Bedrock Edition addon development.
  *
- * - generateBedrockAddonCode - A function that handles the Bedrock Edition addon code generation process.
- * - GenerateBedrockAddonCodeInput - The input type for the generateBedrockAddonCode function.
- * - GenerateBedrockAddonCodeOutput - The return type for the generateBedrockAddonCode function.
+ * Exports:
+ * - invokeChat: An async function that handles the chat interaction.
+ * - ChatInput: The type for the input to the invokeChat function.
+ * - ChatOutput: The type for the return value of the invokeChat function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const GenerateBedrockAddonCodeInputSchema = z.object({
-  description: z.string().describe('The description of the Bedrock Edition addon to generate.'),
+const MessagePartSchema = z.object({
+  text: z.string(),
 });
-export type GenerateBedrockAddonCodeInput = z.infer<typeof GenerateBedrockAddonCodeInputSchema>;
 
-const GenerateBedrockAddonCodeOutputSchema = z.object({
-  code: z.string().describe('The generated Bedrock Edition addon code snippet.'),
+const MessageSchema = z.object({
+  role: z.enum(['user', 'model']),
+  parts: z.array(MessagePartSchema),
 });
-export type GenerateBedrockAddonCodeOutput = z.infer<typeof GenerateBedrockAddonCodeOutputSchema>;
 
-export async function generateBedrockAddonCode(input: GenerateBedrockAddonCodeInput): Promise<GenerateBedrockAddonCodeOutput> {
-  return generateBedrockAddonCodeFlow(input);
+const ChatInputSchema = z.object({
+  history: z.array(MessageSchema).optional().describe("The conversation history."),
+  message: z.string().describe('The latest user message.'),
+});
+export type ChatInput = z.infer<typeof ChatInputSchema>;
+
+const ChatOutputSchema = z.object({
+  response: z.string().describe("The AI assistant's response to the user."),
+});
+export type ChatOutput = z.infer<typeof ChatOutputSchema>;
+
+export async function invokeChat(input: ChatInput): Promise<ChatOutput> {
+  return chatFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'generateBedrockAddonCodePrompt',
-  input: {schema: GenerateBedrockAddonCodeInputSchema},
-  output: {schema: GenerateBedrockAddonCodeOutputSchema},
-  prompt: `You are an expert Minecraft Bedrock Edition addon developer.
+  name: 'bedrockChatPrompt',
+  input: {schema: ChatInputSchema},
+  output: {schema: ChatOutputSchema},
+  prompt: `You are a friendly and expert Minecraft Bedrock Edition addon development assistant.
+Your goal is to help users create addon code, answer their questions about Bedrock addon development, and provide guidance.
+Use the provided conversation history to understand the context of the user's current message.
+If the user asks for code, generate a concise and correct Bedrock Edition addon code snippet based on their request and the conversation history. Format code blocks clearly.
+If the user asks a question, provide a clear and helpful answer.
+If the user's request is ambiguous, ask clarifying questions.
 
-You will generate Bedrock Edition addon code snippets based on the user's description.
+Conversation History:
+{{#each history}}
+{{this.role}}: {{this.parts.[0].text}}
+{{/each}}
 
-Description: {{{description}}}`,
+Current User Message: {{{message}}}
+
+Your Response:`,
 });
 
-const generateBedrockAddonCodeFlow = ai.defineFlow(
+const chatFlow = ai.defineFlow(
   {
-    name: 'generateBedrockAddonCodeFlow',
-    inputSchema: GenerateBedrockAddonCodeInputSchema,
-    outputSchema: GenerateBedrockAddonCodeOutputSchema,
+    name: 'bedrockChatFlow',
+    inputSchema: ChatInputSchema,
+    outputSchema: ChatOutputSchema,
   },
-  async input => {
+  async (input: ChatInput) => {
     const {output} = await prompt(input);
     return output!;
   }
