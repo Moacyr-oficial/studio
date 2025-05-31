@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
   ];
 
   return (
-    <Sidebar side="left" collapsible="icon" variant="sidebar" className="border-r z-40"> {/* Added z-index */}
+    <Sidebar side="left" collapsible="icon" variant="sidebar" className="z-40"> {/* Removed border-r */}
       <SidebarHeader className="p-3 flex items-center justify-between group-data-[collapsible=icon]:justify-center">
         {/* <MinecraftIcon className="h-7 w-7 text-primary group-data-[collapsible=icon]:hidden" /> */}
         <h2 className="font-headline text-lg font-semibold group-data-[collapsible=icon]:hidden">History</h2>

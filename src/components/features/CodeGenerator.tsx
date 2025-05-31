@@ -137,7 +137,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
   };
 
   return (
-    <div className="flex flex-col h-full flex-grow w-full max-w-3xl mx-auto pb-[88px]">
+    <div className="flex flex-col h-full flex-grow w-full max-w-3xl mx-auto pb-[80px]"> {/* Adjusted pb for thinner bar */}
       {showWelcome && messages.length === 0 && (
         <div className="flex-grow flex flex-col items-center justify-center p-6 text-center">
           <h1 className="text-5xl font-bold mb-4">
@@ -206,7 +206,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
 
 
       {error && (
-        <div className="p-4 fixed bottom-[88px] left-1/2 transform -translate-x-1/2 w-full max-w-3xl z-10">
+        <div className="p-4 fixed bottom-[80px] left-1/2 transform -translate-x-1/2 w-full max-w-3xl z-10"> {/* Adjusted bottom for thinner bar */}
           <Alert variant="destructive" className="shadow-md">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
@@ -234,19 +234,19 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
               ))}
             </div>
           )}
-          <form onSubmit={handleSubmit} className="flex items-center gap-2 bg-secondary p-2 rounded-xl shadow-sm">
-            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-9 w-9">
-              <PlusCircle className="h-5 w-5" />
+          <form onSubmit={handleSubmit} className="flex items-center gap-2 bg-secondary p-1.5 rounded-xl shadow-sm">
+            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-8 w-8">
+              <PlusCircle className="h-4 w-4" />
             </Button>
-            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-9 w-9">
-              <ImageIcon className="h-5 w-5" />
+            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-8 w-8">
+              <ImageIcon className="h-4 w-4" />
             </Button>
             <Input
               ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask bedrock aí..."
-              className="flex-grow bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground h-9 px-2"
+              className="flex-grow bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground h-8 px-2"
               disabled={isLoading}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
@@ -255,20 +255,20 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
                 }
               }}
             />
-            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-9 w-9">
-              <Mic className="h-5 w-5" />
+            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-8 w-8">
+              <Mic className="h-4 w-4" />
             </Button>
             {inputValue.trim() || isLoading ? (
-              <Button type="submit" disabled={isLoading || !inputValue.trim()} size="icon" className="bg-primary hover:bg-primary/90 text-primary-foreground h-9 w-9">
+              <Button type="submit" disabled={isLoading || !inputValue.trim()} size="icon" className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 w-8">
                 {isLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Send className="h-5 w-5" />
+                  <Send className="h-4 w-4" />
                 )}
               </Button>
             ) : (
-              <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-9 w-9">
-                <Sparkles className="h-5 w-5" />
+              <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-8 w-8">
+                <Sparkles className="h-4 w-4" />
               </Button>
             )}
           </form>
