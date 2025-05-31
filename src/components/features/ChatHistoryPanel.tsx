@@ -49,10 +49,10 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
       side="left" 
       collapsible="icon" 
       variant="sidebar" 
-      className="z-40 border-r-0 rounded-r-xl" // Removed border, added rounded-r-xl
+      className="z-40 border-r-0 rounded-r-2xl" // Updated to rounded-r-2xl
     >
       <SidebarHeader className="p-3 text-center group-data-[collapsible=icon]:hidden">
-        <h2 className="font-headline text-lg font-semibold">History</h2>
+        <h2 className="font-headline text-lg font-semibold">Conversation</h2> 
       </SidebarHeader>
       
       <div className="p-2 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:mt-2 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
