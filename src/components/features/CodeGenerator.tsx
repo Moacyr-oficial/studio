@@ -38,6 +38,34 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [showWelcome, setShowWelcome] = useState(true);
 
+  // Load messages from localStorage on mount and determine if welcome screen should show
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedMessages = localStorage.getItem('bedrockAIChatMessages');
+      let initialMessages: Message[] = [];
+      if (storedMessages) {
+        try {
+          initialMessages = JSON.parse(storedMessages);
+        } catch (e) {
+          console.error("Failed to parse messages from localStorage", e);
+          localStorage.removeItem('bedrockAIChatMessages'); // Clear corrupted data
+        }
+      }
+      setMessages(initialMessages);
+      setShowWelcome(initialMessages.length === 0);
+      if (initialMessages.length > 0) {
+         setTimeout(() => inputRef.current?.focus(), 0);
+      }
+    }
+  }, []);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bedrockAIChatMessages', JSON.stringify(messages));
+    }
+  }, [messages]);
+
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
@@ -45,25 +73,31 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
   }, [messages]);
 
   useEffect(() => {
-    inputRef.current?.focus();
-  }, [showWelcome]); 
+    if (showWelcome) {
+        inputRef.current?.focus();
+    }
+  }, [showWelcome]);
 
+  // Handle chat reset
   useEffect(() => {
-    if (resetKey !== undefined && resetKey > 0) { 
+    if (resetKey !== undefined && resetKey > 0) {
       setMessages([]);
       setInputValue('');
       setIsLoading(false);
       setError(null);
       setShowWelcome(true);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('bedrockAIChatMessages');
+      }
     }
   }, [resetKey]);
-  
+
   const handleSuggestionClick = (suggestion: string) => {
-    setShowWelcome(false); 
+    setShowWelcome(false);
     handleSubmit(suggestion);
     inputRef.current?.focus();
   };
-  
+
   const handleSubmit = async (eventOrMessage?: FormEvent<HTMLFormElement> | string) => {
     let currentMessage = '';
     if (typeof eventOrMessage === 'string') {
@@ -81,11 +115,11 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       role: 'user',
       content: currentMessage,
     };
-    
+
     setMessages((prevMessages) => [...prevMessages, userMessage]);
 
     if (typeof eventOrMessage !== 'string') {
-        setInputValue('');
+      setInputValue('');
     }
     setIsLoading(true);
     setError(null);
@@ -95,13 +129,13 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
         role: msg.role,
         parts: [{ text: msg.content }],
       }));
-      
-      const input: ChatInput = { 
-        history: historyForAI,
-        message: userMessage.content 
+
+      const input: ChatInput = {
+        history: historyForAI.slice(0, -1), // Pass all but the current user message as history
+        message: userMessage.content
       };
       const result = await invokeChat(input);
-      
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'model',
@@ -116,7 +150,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
         title: "Error",
         description: `Could not get response. ${errorMessage}`,
       });
-       const aiErrorMessage: Message = {
+      const aiErrorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'model',
         content: `Sorry, I encountered an error: ${errorMessage}`,
@@ -124,13 +158,13 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       setMessages((prevMessages) => [...prevMessages, aiErrorMessage]);
     } finally {
       setIsLoading(false);
-      if (typeof eventOrMessage !== 'string' || messages.length === 0) { 
+      if (typeof eventOrMessage !== 'string' || messages.length === 0) {
         inputRef.current?.focus();
       }
     }
   };
 
-  const inputBarHeight = "pb-[72px]"; // Adjusted from pb-[80px] previously
+  const inputBarHeight = "pb-[72px]";
 
 
   return (
@@ -151,7 +185,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
               <Button
                 key={suggestion}
                 variant="outline"
-                className="bg-secondary hover:bg-muted text-left justify-start p-4 h-auto text-sm rounded-xl border-muted"
+                className="bg-secondary hover:bg-muted text-left justify-start p-4 h-auto text-sm rounded-xl border-muted whitespace-normal"
                 onClick={() => handleSuggestionClick(suggestion)}
               >
                 {suggestion}
@@ -167,7 +201,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
             <div
               key={message.id}
               className={cn(
-                "flex w-full items-start mb-6", // Added mb-6 for spacing
+                "flex w-full items-start mb-6",
                 message.role === 'user' ? 'justify-end' : 'justify-start'
               )}
             >
@@ -182,15 +216,16 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
                 )}
                 dangerouslySetInnerHTML={{ __html: message.content.replace(/```(\w+)?\n([\s\S]*?)```/g, (_match, lang, code) => {
                   const languageClass = lang ? `language-${lang}` : '';
+                  // Basic escaping for HTML, consider a more robust library for production
                   const escapedCode = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
                   return `<pre class="${languageClass}"><code class="${languageClass}">${escapedCode.trim()}</code></pre>`;
-                }).replace(/(?<!<br\s*\/?>)\n/g, '<br />') }} 
+                }).replace(/(?<!<br\s*\/?>)\n/g, '<br />') }}
               />
               {message.role === 'user' && <UserCircle className="h-8 w-8 ml-3 mt-1 text-muted-foreground flex-shrink-0" />}
             </div>
           ))}
            {isLoading && messages[messages.length -1]?.role === 'user' && (
-            <div className="flex justify-start items-start mt-6"> {/* Added mt-6 for spacing */}
+            <div className="flex justify-start items-start mt-6">
                 <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />
                 <div className="max-w-[80%] p-3.5 rounded-2xl shadow-sm bg-secondary text-secondary-foreground rounded-bl-none flex items-center">
                     <Loader2 className="h-5 w-5 animate-spin mr-2 text-primary" /> Thinking...
@@ -213,9 +248,9 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
 
       <div className="fixed bottom-0 left-0 right-0 bg-background z-10">
         <div className="max-w-3xl mx-auto p-3 md:p-4">
-          {!showWelcome && messages.length > 0 && messages.length < 5 && !isLoading && ( 
-            <div className="flex gap-2 mt-6 mb-4 overflow-x-auto pb-2 no-scrollbar"> {/* Added mt-6, changed mb-3 to mb-4 */}
-              {promptSuggestions.filter(s => !messages.some(m => m.content === s)).slice(0,2).map((suggestion) => (
+          {!showWelcome && messages.length > 0 && messages.length < 10 && !isLoading && ( // Show more suggestions
+            <div className="flex gap-2 mt-6 mb-4 overflow-x-auto pb-2 no-scrollbar">
+              {promptSuggestions.filter(s => !messages.some(m => m.content === s)).slice(0,3).map((suggestion) => ( // Show up to 3
                 <Button
                   key={suggestion}
                   variant="outline"
@@ -275,8 +310,8 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
           display: none;
         }
         .no-scrollbar {
-          -ms-overflow-style: none; 
-          scrollbar-width: none; 
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>

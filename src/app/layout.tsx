@@ -49,7 +49,6 @@ export default function RootLayout({
         {isAppLoading ? (
           <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-background">
             <Code className="h-16 w-16 text-primary animate-pulse" />
-            <p className="mt-4 text-lg text-muted-foreground">Loading bedrock aí...</p>
           </div>
         ) : (
           <SidebarProvider>
@@ -69,3 +68,4 @@ export default function RootLayout({
 // };
 // And then manage any dynamic title changes via useEffect in specific pages or a utility.
 // However, placing <title> and <meta> directly in <head> within a client component layout works for basic cases.
+

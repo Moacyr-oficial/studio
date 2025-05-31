@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ImageUp, Settings as SettingsIcon, Loader2 } from 'lucide-react'; // Added Loader2
+import { ImageUp, Settings as SettingsIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AccountSettingsDialogProps {
@@ -23,11 +23,20 @@ interface AccountSettingsDialogProps {
   onOpenChange: (isOpen: boolean) => void;
 }
 
+const DEFAULT_USER_NAME = "Bedrock Developer";
+
 export function AccountSettingsDialog({ isOpen, onOpenChange }: AccountSettingsDialogProps) {
-  const [name, setName] = useState("Current User Name");
+  const [name, setName] = useState(DEFAULT_USER_NAME);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   // const [avatarSrc, setAvatarSrc] = useState("https://placehold.co/120x120.png");
+
+  useEffect(() => {
+    if (isOpen && typeof window !== 'undefined') {
+      const storedName = localStorage.getItem('bedrockAIUserName');
+      setName(storedName || DEFAULT_USER_NAME);
+    }
+  }, [isOpen]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -36,6 +45,10 @@ export function AccountSettingsDialog({ isOpen, onOpenChange }: AccountSettingsD
 
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bedrockAIUserName', name);
+    }
 
     setIsSaving(false);
     toast({
@@ -48,7 +61,6 @@ export function AccountSettingsDialog({ isOpen, onOpenChange }: AccountSettingsD
   const handlePhotoChange = () => {
     // Placeholder for photo change logic
     console.log("Change photo clicked");
-    // Example: open file input, upload, update avatarSrc state
     toast({
       title: "Feature not implemented",
       description: "Changing photo is not yet available.",
