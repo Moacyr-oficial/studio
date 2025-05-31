@@ -186,7 +186,7 @@ export function ChatInterface() { // Renamed from CodeGenerator to ChatInterface
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-muted z-10">
+      <div className="fixed bottom-0 left-0 right-0 bg-background z-10">
         <div className="max-w-3xl mx-auto p-3 md:p-4">
           {!showWelcome && messages.length > 0 && messages.length < 3 && ( // Show suggestions only if chat started and not too long
             <div className="flex gap-2 mb-3 overflow-x-auto pb-2 no-scrollbar">
