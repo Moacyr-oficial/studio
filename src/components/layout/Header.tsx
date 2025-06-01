@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from 'react';
-import { UserCircle, Code } from 'lucide-react';
+import { UserCircle, X } from 'lucide-react'; // Changed from Code to X
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { AccountSettingsDialog } from '@/components/features/AccountSettingsDialog';
 
@@ -15,7 +15,7 @@ export function Header() {
         <div className="container mx-auto flex items-center justify-between max-w-3xl">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground">
-              <Code className="h-6 w-6" />
+              <X className="h-6 w-6" /> {/* Changed from Code to X */}
             </SidebarTrigger>
             <h1 className="text-xl font-headline font-semibold tracking-tight">
               bedrock <span className="text-primary">aí</span>
