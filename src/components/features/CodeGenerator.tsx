@@ -170,8 +170,8 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
   return (
     <div className={cn("flex flex-col h-full flex-grow w-full max-w-3xl mx-auto", inputBarHeight)}>
       {showWelcome && messages.length === 0 && (
-        <div className="flex-grow flex flex-col items-center justify-center p-6 text-center">
-          <h1 className="text-5xl font-bold mb-4">
+        <div className="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 text-center">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-3 sm:mb-4">
             <span
               className="bg-clip-text text-transparent"
               style={{ backgroundImage: 'linear-gradient(to right, #7c3aed, #db2777)' }}
@@ -179,7 +179,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
               Hello!
             </span>
           </h1>
-          <p className="text-muted-foreground text-lg mb-12">How can I help you with Minecraft Bedrock addons today?</p>
+          <p className="text-muted-foreground text-base sm:text-lg mb-8 sm:mb-12">How can I help you with Minecraft Bedrock addons today?</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
             {promptSuggestions.map((suggestion) => (
               <Button
