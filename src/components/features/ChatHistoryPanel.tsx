@@ -2,7 +2,7 @@
 "use client";
 
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Rabbit, ToyBrick, Map as MapIcon } from 'lucide-react'; // Removed Settings2, LogOut
+import { PlusCircle, Rabbit, ToyBrick, Map as MapIcon } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -10,7 +10,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  // SidebarFooter, // Removed
   SidebarGroup,
   SidebarSeparator,
   useSidebar,
@@ -48,7 +47,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
       side="left"
       collapsible="icon"
       variant="sidebar"
-      className="z-40 border-r-0 rounded-r-2xl"
+      className="z-40 border-r-0 rounded-r-2xl" // Ensure border-r-0 and rounded-r-2xl are applied
     >
       <SidebarHeader className="px-3 pt-3 pb-2 text-center group-data-[collapsible=icon]:hidden">
         <h2 className="font-headline text-lg font-semibold">Conversation</h2>
@@ -113,8 +112,6 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
           </SidebarGroup>
         </div>
       </SidebarContent>
-
-      {/* Removed separator and footer that contained Settings and Log out */}
     </Sidebar>
   );
 }
