@@ -30,7 +30,6 @@ interface ChatInterfacePCProps {
   imageInputRef: React.RefObject<HTMLInputElement>;
 
   setInputValue: (value: string) => void;
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>; 
   setShowWelcome: (value: boolean) => void;
 
   handleSubmit: (eventOrMessage?: FormEvent<HTMLFormElement> | string) => Promise<void>;
@@ -60,8 +59,7 @@ export function ChatInterfacePC({
   scrollAreaRef,
   imageInputRef,
   setInputValue,
-  // setMessages, // Not directly used by this component's JSX, but passed for consistency if needed
-  // setShowWelcome, // This is passed directly
+  setShowWelcome,
   handleSubmit,
   handleSuggestionClick, 
   handleImageButtonClick,
@@ -92,7 +90,7 @@ export function ChatInterfacePC({
             </span>
           </h1>
           <p className="text-muted-foreground text-base md:text-lg mb-8 md:mb-12">How can I help you with Minecraft Bedrock addons today?</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full md:max-w-3xl lg:max-w-4xl">
             {promptSuggestions.map((suggestion) => (
               <Button
                 key={suggestion}
@@ -137,6 +135,7 @@ export function ChatInterfacePC({
                                 width={200}
                                 height={200}
                                 className="rounded-md object-contain max-h-48"
+                                data-ai-hint="user upload"
                             />
                             </div>
                         )}
@@ -194,6 +193,7 @@ export function ChatInterfacePC({
                 fill
                 objectFit="cover"
                 className="rounded-md border border-border"
+                data-ai-hint="image preview"
               />
               <Button
                 variant="ghost"
@@ -281,3 +281,4 @@ export function ChatInterfacePC({
     </div>
   );
 }
+
