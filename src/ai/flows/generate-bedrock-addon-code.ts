@@ -1,6 +1,6 @@
 
 'use server';
-/** */
+/**
  * @fileOverview A conversational AI agent for Minecraft Bedrock Edition addon development.
  *
  * Exports:
