@@ -82,7 +82,11 @@ export function ChatInterfacePC({
   const errorBottomOffset = parseInt((imagePreview ? inputBarHeightWithPreview : inputBarHeight).replace('pb-[','').replace('px]',''));
 
   return (
-    <div className={cn("flex flex-col h-full flex-grow w-full mx-auto", CHAT_AREA_MAX_WIDTH_CLASSES_PC, imagePreview ? inputBarHeightWithPreview : inputBarHeight)}>
+    <div className={cn(
+      "flex flex-col h-full flex-grow w-full mx-auto",
+      CHAT_AREA_MAX_WIDTH_CLASSES_PC,
+      imagePreview ? inputBarHeightWithPreview : inputBarHeight
+    )}>
       {showWelcome && messages.length === 0 && (
         <div className="flex-grow flex flex-col items-center justify-center p-4 md:p-6 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-3 md:mb-4">
@@ -94,7 +98,7 @@ export function ChatInterfacePC({
             </span>
           </h1>
           <p className="text-muted-foreground text-base md:text-lg mb-8 md:mb-12">How can I help you with Minecraft Bedrock addons today?</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-md">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl"> {/* Changed max-w-md to max-w-2xl */}
             {promptSuggestions.map((suggestion) => (
               <Button
                 key={suggestion}
@@ -286,3 +290,4 @@ export function ChatInterfacePC({
     </div>
   );
 }
+
