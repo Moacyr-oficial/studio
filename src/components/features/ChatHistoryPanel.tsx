@@ -59,7 +59,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
       side="left"
       collapsible="icon"
       variant="sidebar"
-      className="z-40 border-r-0 rounded-r-2xl"
+      className="z-40 rounded-r-2xl" // Removed border-r-0 to allow default sidebar border
     >
       <SidebarHeader className="px-3 pt-3 pb-2 text-center group-data-[collapsible=icon]:hidden">
         <h2 className="font-headline text-lg font-semibold">Conversation</h2>
@@ -110,6 +110,8 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
                         className="font-normal text-sm h-auto py-1.5 px-2 w-full justify-start group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:p-0"
                         variant="ghost"
                         tooltip={sidebarState === 'collapsed' ? item.title : undefined}
+                        // If history items were to load chats and close panel:
+                        // onClick={isMobile ? () => setOpenMobile(false) : () => { /* load chat */ if(useSidebar().open) useSidebar().setOpen(false); }}
                     >
                       <span className="truncate group-data-[collapsible=icon]:hidden flex-grow">{item.title}</span>
                       <span className="hidden group-data-[collapsible=icon]:inline-block text-xs">
