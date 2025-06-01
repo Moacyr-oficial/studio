@@ -12,7 +12,6 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit'; // Genkit's re-exported Zod
 
-// Original Schemas (kept for reference and easy revert)
 const MessagePartSchema = z.object({
   text: z.string(),
 });
@@ -37,85 +36,10 @@ const ChatOutputSchema = z.object({
 export type ChatOutput = z.infer<typeof ChatOutputSchema>;
 
 
-// Simplified Schemas for Testing testFlow
-const TestChatInputSchema = z.object({
-  message: z.string().describe('The latest user message for test flow.'),
-});
-type TestChatInput = z.infer<typeof TestChatInputSchema>;
-
-const TestChatOutputSchema = z.string().describe("A chunk of the test flow's textual response.");
-
-
-// Simplified Test Flow
-const testFlow = ai.defineFlow(
-  {
-    name: 'testBedrockChatFlow',
-    inputSchema: TestChatInputSchema,
-    outputSchema: TestChatOutputSchema, // Output is a string chunk
-  },
-  async function* (input: TestChatInput): AsyncGenerator<string> {
-    console.log('[testFlow] Started with input:', input.message);
-    yield `TestFlow: Chunk 1 for message: "${input.message}". `;
-    // Simulate async delay
-    await new Promise(resolve => setTimeout(resolve, 100));
-    yield `TestFlow: Chunk 2.`;
-    console.log('[testFlow] Finished.');
-  }
-);
-
-export async function invokeChat(input: ChatInput): Promise<ReadableStream<string>> {
-  // Map the original ChatInput to the TestChatInput for this test
-  const testInput: TestChatInput = { message: input.message };
-  
-  console.log('[invokeChat] Calling testFlow with input:', testInput);
-  const streamGenerator = testFlow(testInput);
-  console.log('[invokeChat] Called testFlow. Returned type:', typeof streamGenerator);
-  if (streamGenerator) {
-    console.log('[invokeChat] streamGenerator.constructor.name:', streamGenerator.constructor?.name);
-    console.log('[invokeChat] streamGenerator has [Symbol.asyncIterator]:', typeof (streamGenerator as any)[Symbol.asyncIterator] === 'function');
-  }
-
-
-  return new ReadableStream<string>({
-    async start(controller) {
-      const encoder = new TextEncoder();
-      try {
-        if (!streamGenerator || typeof (streamGenerator as any)[Symbol.asyncIterator] !== 'function') {
-          const errorDetail = `[invokeChat] CRITICAL ERROR: testFlow(testInput) did not return an async iterable. Received type: ${typeof streamGenerator}. Value: ${JSON.stringify(streamGenerator)}. Has Symbol.asyncIterator: ${typeof (streamGenerator as any)?.[Symbol.asyncIterator] === 'function'}`;
-          console.error(errorDetail);
-          
-          if (streamGenerator && typeof (streamGenerator as any).then === 'function') {
-            console.error("[invokeChat] The return value from testFlow(testInput) appears to be a Promise. This is unexpected for direct async generator invocation.");
-          }
-          controller.error(new Error(errorDetail)); // Send detailed error to client
-          return;
-        }
-
-        console.log('[invokeChat] streamGenerator is async iterable. Starting iteration.');
-        for await (const chunk of streamGenerator) {
-          console.log('[invokeChat] Received chunk from streamGenerator:', chunk);
-          controller.enqueue(encoder.encode(chunk));
-        }
-        console.log('[invokeChat] Finished iterating over streamGenerator.');
-      } catch (e: unknown) {
-        const errorMessage = e instanceof Error ? e.message : String(e) || 'Streaming failed due to an unknown error in invokeChat';
-        console.error("[invokeChat] Streaming error:", e);
-        controller.error(e instanceof Error ? e : new Error(errorMessage));
-      } finally {
-        console.log('[invokeChat] Closing controller.');
-        controller.close();
-      }
-    },
-  });
-}
-
-
-// Original bedrockChatPrompt and chatFlow (kept for reference and easy revert)
-/*
 const bedrockChatPrompt = ai.definePrompt({
   name: 'bedrockChatPrompt',
   input: {schema: ChatInputSchema},
-  output: {schema: ChatOutputSchema},
+  output: {schema: ChatOutputSchema}, // This is the schema for the *complete* output of a chunk
   prompt: `You are a friendly and expert Minecraft Bedrock Edition addon development assistant.
 Your goal is to help users create addon code, answer their questions about Bedrock addon development, and provide guidance.
 Use the provided conversation history to understand the context of the user's current message.
@@ -142,28 +66,57 @@ const chatFlow = ai.defineFlow(
   {
     name: 'bedrockChatFlow',
     inputSchema: ChatInputSchema,
-    outputSchema: z.string().describe("A chunk of the AI assistant's textual response."),
+    // The output schema for the flow itself usually refers to the resolved, complete output.
+    // Since we're streaming text, the "complete" output might be the full concatenated string,
+    // or in this case, we can align it with the prompt's output schema for consistency.
+    outputSchema: ChatOutputSchema,
   },
-  async function* (input: ChatInput): AsyncGenerator<string> {
+  async (input: ChatInput): Promise<ReadableStream<string>> => {
+    console.log('[chatFlow] Started with input:', input.message);
     const {stream: promptStream, response: promptResponsePromise} = bedrockChatPrompt.generateStream(input);
+    const encoder = new TextEncoder();
 
-    try {
-      for await (const chunk of promptStream) {
-        if (chunk?.output?.response) {
-          yield chunk.output.response;
+    const readableStream = new ReadableStream<string>({
+      async start(controller) {
+        console.log('[chatFlow_ReadableStream] Stream started.');
+        try {
+          for await (const chunk of promptStream) {
+            if (chunk?.output?.response) {
+              // console.log('[chatFlow_ReadableStream] Yielding chunk:', chunk.output.response);
+              controller.enqueue(encoder.encode(chunk.output.response));
+            }
+          }
+          await promptResponsePromise; // Wait for the full response to complete
+          console.log('[chatFlow_ReadableStream] Prompt stream finished.');
+          controller.close();
+        } catch (e: unknown) {
+          const errorMessage = e instanceof Error ? e.message : String(e);
+          console.error("[chatFlow_ReadableStream] Streaming error:", errorMessage, e);
+          controller.error(e instanceof Error ? e : new Error(errorMessage));
         }
       }
-      await promptResponsePromise;
-    } catch (e) {
-      console.error("BedrockChatFlow: Error during prompt streaming or awaiting final response:", e);
-      if (e instanceof Error) {
-        // It's often better to yield an error message or ensure controller.error() is robustly called
-        // rather than re-throwing from within an async generator if the stream has already started.
-        // For now, this will propagate up to invokeChat's catch block.
-        throw new Error(`Error in AI prompt generation: ${e.message}`);
-      }
-      throw new Error("Unknown error in AI prompt generation.");
-    }
+    });
+    console.log('[chatFlow] Returning ReadableStream.');
+    return readableStream;
   }
 );
-*/
+
+
+export async function invokeChat(input: ChatInput): Promise<ReadableStream<string>> {
+  console.log('[invokeChat] Calling chatFlow with input:', input.message);
+  try {
+    const stream = await chatFlow(input);
+    console.log('[invokeChat] Received stream from chatFlow.');
+    return stream;
+  } catch (e) {
+     const errorMessage = e instanceof Error ? e.message : 'Unknown error calling chatFlow';
+     console.error('[invokeChat] Error calling chatFlow:', errorMessage, e);
+     // Return a stream that emits the error
+     return new ReadableStream<string>({
+        start(controller) {
+            controller.error(new Error(`Failed to initiate chat: ${errorMessage}`));
+            controller.close();
+        }
+     });
+  }
+}
