@@ -43,7 +43,7 @@ interface ChatInterfacePCProps {
   promptSuggestions: string[];
 }
 
-const CHAT_AREA_MAX_WIDTH_CLASSES_PC = "md:max-w-5xl lg:max-w-6xl xl:max-w-screen-xl 2xl:max-w-screen-2xl";
+const CHAT_AREA_MAX_WIDTH_CLASSES_PC = "md:max-w-screen-xl xl:max-w-screen-2xl";
 
 
 export function ChatInterfacePC({
@@ -290,3 +290,4 @@ export function ChatInterfacePC({
     </div>
   );
 }
+
