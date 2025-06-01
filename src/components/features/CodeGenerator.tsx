@@ -184,8 +184,8 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
             {promptSuggestions.map((suggestion) => (
               <Button
                 key={suggestion}
-                variant="outline"
-                className="bg-secondary hover:bg-muted text-left justify-start p-4 h-auto text-sm rounded-xl border-muted whitespace-normal"
+                variant="ghost"
+                className="bg-secondary hover:bg-muted text-secondary-foreground text-left justify-start p-4 h-auto text-sm rounded-xl whitespace-normal"
                 onClick={() => handleSuggestionClick(suggestion)}
               >
                 {suggestion}
