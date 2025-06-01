@@ -49,31 +49,25 @@ export const CodeBlockDisplay: React.FC<CodeBlockDisplayProps> = ({ code, langua
     });
   };
 
-  const langClass = language ? `language-${language}` : 'language-plaintext';
+  const langClass = language ? `language-${language.toLowerCase()}` : 'language-text';
 
   return (
-    <div className="code-block-container relative group my-2">
-      {/* The main container for the code block with distinct styling */}
-      <div className={cn(
-        "p-4 rounded-lg overflow-x-auto bg-popover text-sm text-popover-foreground", 
-        // Removed langClass from here as it's better on pre/code for semantics
-      )}>
-        <pre className={cn(
-          "p-0 bg-transparent overflow-visible", // Reset prose styles for pre
-           langClass // Applies language-X for potential syntax highlighting by CSS/JS
-        )}>
-          <code className={cn(
-            "font-code whitespace-pre", // Ensures monospace font and preserves whitespace
-            langClass
-          )}>
+    <div className="my-3 bg-popover rounded-lg shadow-sm overflow-hidden">
+      {/* Code display area */}
+      <div className="p-4 overflow-x-auto text-sm">
+        <pre className={cn("bg-transparent p-0 font-code whitespace-pre text-popover-foreground", langClass)}>
+          <code className={langClass}>
             {code}
           </code>
         </pre>
-        <div className="absolute bottom-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+      </div>
+      {/* Footer area */}
+      <div className="flex items-center justify-between px-4 py-2 border-t border-background/20 bg-popover"> {/* Footer shares popover bg or can be slightly different */}
+        <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-xs bg-background/50 hover:bg-background/70 p-1 text-popover-foreground"
+            className="h-7 w-7 text-popover-foreground/70 hover:text-popover-foreground hover:bg-background/10"
             onClick={handleCopy}
             title="Copy code"
           >
@@ -82,13 +76,19 @@ export const CodeBlockDisplay: React.FC<CodeBlockDisplayProps> = ({ code, langua
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-xs bg-background/50 hover:bg-background/70 p-1 text-popover-foreground"
+            className="h-7 w-7 text-popover-foreground/70 hover:text-popover-foreground hover:bg-background/10"
             onClick={handleDownload}
             title="Download code"
           >
             <Download className="h-4 w-4" />
           </Button>
         </div>
+        <span className="text-xs text-popover-foreground/60">
+          Use code with caution.
+        </span>
+        <span className="text-xs font-medium text-popover-foreground/70 uppercase">
+          {language || 'TEXT'}
+        </span>
       </div>
     </div>
   );

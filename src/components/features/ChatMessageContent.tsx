@@ -8,11 +8,12 @@ interface ChatMessageContentProps {
   content: string;
 }
 
+// This regex aims to capture code blocks including those with no language specified
+// or with languages containing characters like hyphen (e.g., "objective-c")
+// ```lang\ncode``` or ```\ncode```
 const parseMessageSegments = (rawContent: string): Array<{ type: 'text' | 'code'; lang?: string; value: string }> => {
   const segments: Array<{ type: 'text' | 'code'; lang?: string; value: string }> = [];
-  // Regex to find code blocks and capture language and content
-  // It handles optional language tags.
-  const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
+  const codeBlockRegex = /```([a-zA-Z0-9\-_]*)\n([\s\S]*?)```/g;
   let lastIndex = 0;
   let match;
 
@@ -23,8 +24,15 @@ const parseMessageSegments = (rawContent: string): Array<{ type: 'text' | 'code'
     }
     // Code block
     const lang = match[1] || undefined; // if language is empty string, treat as undefined
-    const codeContent = match[2]; // Content between ```
-    segments.push({ type: 'code', lang, value: codeContent.trimEnd() }); // Trim trailing newline from capture
+    let codeContent = match[2];
+    
+    // Trim trailing newline if it's the only thing on the last line of the code block
+    // This prevents an extra empty line often added by LLMs inside the ```
+    if (codeContent.endsWith('\n')) {
+        codeContent = codeContent.substring(0, codeContent.length -1);
+    }
+
+    segments.push({ type: 'code', lang, value: codeContent });
     lastIndex = codeBlockRegex.lastIndex;
   }
 
@@ -33,11 +41,18 @@ const parseMessageSegments = (rawContent: string): Array<{ type: 'text' | 'code'
     segments.push({ type: 'text', value: rawContent.substring(lastIndex) });
   }
   
-  // If content is empty or only whitespace, return empty array or a single text segment
-  if (segments.length === 0 && rawContent.trim() === '') {
+  // Handle cases where the entire content might be just a code block or just text
+  // or empty content
+  if (segments.length === 0) {
+    if (rawContent.trim() === '') {
+      // If content is truly empty or only whitespace
       segments.push({ type: 'text', value: rawContent });
-  } else if (segments.length === 0 && rawContent) {
+    } else if (!rawContent.includes('```')) {
+      // If no code blocks were found, the whole thing is text
       segments.push({ type: 'text', value: rawContent });
+    }
+    // If it was supposed to be a code block but regex failed, it will be treated as text.
+    // This is a fallback. More robust parsing might be needed for malformed inputs.
   }
 
 
@@ -47,8 +62,8 @@ const parseMessageSegments = (rawContent: string): Array<{ type: 'text' | 'code'
 export const ChatMessageContent: React.FC<ChatMessageContentProps> = ({ content }) => {
   const segments = parseMessageSegments(content);
 
-  if (segments.length === 0) {
-    return <div className="whitespace-pre-wrap"></div>; // Render empty div for empty content
+  if (segments.length === 0 || (segments.length === 1 && segments[0].type === 'text' && segments[0].value.trim() === '')) {
+    return <div className="whitespace-pre-wrap"></div>; // Render empty div for effectively empty content
   }
 
   return (
@@ -69,3 +84,4 @@ export const ChatMessageContent: React.FC<ChatMessageContentProps> = ({ content 
     </>
   );
 };
+
