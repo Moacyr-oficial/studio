@@ -69,46 +69,46 @@ const chatFlow = ai.defineFlow(
     name: 'bedrockChatFlow',
     inputSchema: ChatInputSchema,
     // The outputSchema for a streaming flow defines the type of EACH YIELDED CHUNK.
-    // Since we intend to yield the `response` string part from ChatOutputSchema, this should be z.string().
     outputSchema: z.string().describe("A chunk of the AI assistant's textual response."),
   },
   async function* (input: ChatInput): AsyncGenerator<string> {
     const {stream: promptStream, response: promptResponsePromise} = bedrockChatPrompt.generateStream(input);
 
-    for await (const chunk of promptStream) {
-      // A chunk from prompt.generateStream() is of type GenerateResponseChunk.
-      // chunk.output is a partial or complete version of the prompt's ChatOutputSchema.
-      // We are interested in the 'response' field of that output.
-      if (chunk?.output?.response) {
-        yield chunk.output.response;
-      }
-    }
-    // It's important to await the full response promise from the prompt's stream
-    // to ensure all resources are cleaned up and the prompt execution is complete.
     try {
+      for await (const chunk of promptStream) {
+        if (chunk?.output?.response) {
+          yield chunk.output.response;
+        }
+      }
+      // Await the full response promise from the prompt's stream
+      // to ensure all resources are cleaned up and the prompt execution is complete.
       await promptResponsePromise;
     } catch (e) {
-      console.error("BedrockChatFlow: Error awaiting final prompt response:", e);
+      console.error("BedrockChatFlow: Error during prompt streaming or awaiting final response:", e);
       // Depending on the desired behavior, you might want to yield an error message here
       // or re-throw if the stream itself should be considered failed.
+      // For now, let's re-throw to make it visible to the client-side error handling.
+      if (e instanceof Error) {
+        throw new Error(`Error in AI prompt generation: ${e.message}`);
+      }
+      throw new Error("Unknown error in AI prompt generation.");
     }
   }
 );
 
 export async function invokeChat(input: ChatInput): Promise<ReadableStream<string>> {
-  const streamGenerator = chatFlow(input); // This call MUST return an AsyncGenerator<string>
+  const streamGenerator = chatFlow(input);
 
   return new ReadableStream<string>({
     async start(controller) {
       const encoder = new TextEncoder();
       try {
-        // Explicitly check if streamGenerator is an async iterable.
         if (!streamGenerator || typeof streamGenerator[Symbol.asyncIterator] !== 'function') {
-          const errorDetail = `Internal error: chatFlow(input) did not return an async iterable. Received type: ${typeof streamGenerator}.`;
-          console.error(errorDetail, "Value:", streamGenerator);
-          // Check if it might be a Promise that needs awaiting (though less likely for direct async generator return)
+          const errorDetail = `Internal error: chatFlow(input) did not return an async iterable. Received type: ${typeof streamGenerator}. Value: ${JSON.stringify(streamGenerator)}`;
+          console.error(errorDetail);
+          
           if (streamGenerator && typeof (streamGenerator as any).then === 'function') {
-            console.error("The return value from chatFlow(input) appears to be a Promise. This is unexpected if chatFlow is an async generator itself.");
+            console.error("The return value from chatFlow(input) appears to be a Promise. This is unexpected if chatFlow is an async generator itself. Awaiting might be needed before iteration if this is the case, but ai.defineFlow should return the generator directly.");
           }
           throw new Error(errorDetail);
         }
@@ -118,7 +118,6 @@ export async function invokeChat(input: ChatInput): Promise<ReadableStream<strin
         }
       } catch (e: unknown) {
         console.error("Streaming error in bedrockChatFlow execution (invokeChat):", e);
-        // Ensure a proper Error object is passed to controller.error
         const errorMessage = e instanceof Error ? e.message : String(e) || 'Streaming failed due to an unknown error';
         controller.error(e instanceof Error ? e : new Error(errorMessage));
       } finally {
