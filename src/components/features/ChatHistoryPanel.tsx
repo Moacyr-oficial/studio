@@ -2,7 +2,7 @@
 "use client";
 
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Rabbit, ToyBrick, Map as MapIcon, Settings2, LogOut } from 'lucide-react';
+import { PlusCircle, Rabbit, ToyBrick, Map as MapIcon } from 'lucide-react'; // Removed Settings2, LogOut
 import {
   Sidebar,
   SidebarContent,
@@ -10,9 +10,8 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarFooter,
+  // SidebarFooter, // Removed
   SidebarGroup,
-  // SidebarGroupLabel, // Replaced with custom div for "RECENT"
   SidebarSeparator,
   useSidebar,
 } from '@/components/ui/sidebar';
@@ -115,18 +114,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
         </div>
       </SidebarContent>
 
-      <SidebarSeparator className="group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:my-2 group-data-[collapsible=icon]:w-5/6"/>
-
-      <SidebarFooter className="px-2 pt-1 pb-2 flex flex-col gap-1">
-         <SidebarMenuButton variant="ghost" className="w-full justify-start gap-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:p-0" tooltip={sidebarState === 'collapsed' ? 'Settings' : undefined}>
-            <Settings2 className="size-4 shrink-0" />
-            <span className="group-data-[collapsible=icon]:hidden">Settings</span>
-        </SidebarMenuButton>
-        <SidebarMenuButton variant="ghost" className="w-full justify-start gap-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:p-0" tooltip={sidebarState === 'collapsed' ? 'Log out' : undefined}>
-            <LogOut className="size-4 shrink-0" />
-            <span className="group-data-[collapsible=icon]:hidden">Log out</span>
-        </SidebarMenuButton>
-      </SidebarFooter>
+      {/* Removed separator and footer that contained Settings and Log out */}
     </Sidebar>
   );
 }
