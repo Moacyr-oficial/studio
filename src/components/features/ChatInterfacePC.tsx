@@ -28,7 +28,7 @@ interface ChatInterfacePCProps {
   inputRef: React.RefObject<HTMLInputElement>;
   scrollAreaRef: React.RefObject<HTMLDivElement>;
   imageInputRef: React.RefObject<HTMLInputElement>;
-  
+
   setInputValue: (value: string) => void;
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>; // Needed for optimistic updates or direct manipulation
   setShowWelcome: (value: boolean) => void;
@@ -39,11 +39,11 @@ interface ChatInterfacePCProps {
   handleImageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   clearImageSelection: () => void;
   handleFeedback: (feedbackType: 'positive' | 'negative', messageId: string) => void;
-  
+
   promptSuggestions: string[];
 }
 
-const CHAT_AREA_MAX_WIDTH_CLASSES_PC = "md:max-w-4xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-screen-xl";
+const CHAT_AREA_MAX_WIDTH_CLASSES_PC = "md:max-w-5xl lg:max-w-6xl xl:max-w-screen-xl 2xl:max-w-screen-2xl";
 
 
 export function ChatInterfacePC({
@@ -98,7 +98,7 @@ export function ChatInterfacePC({
             </span>
           </h1>
           <p className="text-muted-foreground text-base md:text-lg mb-8 md:mb-12">How can I help you with Minecraft Bedrock addons today?</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl"> {/* Changed max-w-md to max-w-2xl */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
             {promptSuggestions.map((suggestion) => (
               <Button
                 key={suggestion}
@@ -152,12 +152,12 @@ export function ChatInterfacePC({
                         </div>
                         {message.role === 'user' && (
                         <Avatar className="h-8 w-8 ml-3 mt-1 flex-shrink-0 border border-border">
-                            <AvatarImage src={userAvatar || undefined} alt={userName} data-ai-hint="profile person" />
+                            <AvatarImage src={userAvatar || undefined} alt={userName} data-ai-hint="profile person"/>
                             <AvatarFallback>{userName?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                         </Avatar>
                         )}
                     </div>
-                    {message.role === 'model' && message.content.length > 0 &&  ( 
+                    {message.role === 'model' && message.content.length > 0 &&  (
                         <div className="flex items-center gap-1 mt-2 ml-11">
                         <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-primary" onClick={() => handleFeedback('positive', message.id)}>
                             <ThumbsUp className="h-4 w-4" />
@@ -169,7 +169,7 @@ export function ChatInterfacePC({
                     )}
                     </div>
                 ))}
-                {isLoading && messages[messages.length -1]?.role === 'user' && ( 
+                {isLoading && messages[messages.length -1]?.role === 'user' && (
                     <div className="flex justify-start items-start mt-6">
                         <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />
                         <div className="max-w-[80%] p-3.5 rounded-2xl shadow-sm bg-secondary text-secondary-foreground rounded-bl-none flex items-center">
@@ -200,7 +200,7 @@ export function ChatInterfacePC({
               <Image
                 src={imagePreview}
                 alt="Selected preview"
-                fill 
+                fill
                 objectFit="cover"
                 className="rounded-md border border-border"
               />
@@ -214,9 +214,9 @@ export function ChatInterfacePC({
               </Button>
             </div>
           )}
-          {!showWelcome && messages.length > 0 && messages.length < 10 && !isLoading && !imagePreview && ( 
+          {!showWelcome && messages.length > 0 && messages.length < 10 && !isLoading && !imagePreview && (
             <div className="flex gap-2 mt-6 mb-4 overflow-x-auto pb-2 no-scrollbar">
-              {promptSuggestions.filter(s => !messages.some(m => m.content === s)).slice(0,3).map((suggestion) => ( 
+              {promptSuggestions.filter(s => !messages.some(m => m.content === s)).slice(0,3).map((suggestion) => (
                 <Button
                   key={suggestion}
                   variant="outline"
@@ -251,7 +251,7 @@ export function ChatInterfacePC({
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask bedrock aí..."
               className="flex-grow bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground h-8 px-2"
-              disabled={isLoading} 
+              disabled={isLoading}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
                   e.preventDefault();
@@ -264,7 +264,7 @@ export function ChatInterfacePC({
             </Button>
             {inputValue.trim() || isLoading || imageFile ? (
               <Button type="submit" disabled={isLoading || (!inputValue.trim() && !imageFile)} size="icon" className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 w-8">
-                {isLoading ? ( 
+                {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Send className="h-4 w-4" />
@@ -290,4 +290,3 @@ export function ChatInterfacePC({
     </div>
   );
 }
-
