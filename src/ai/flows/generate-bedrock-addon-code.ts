@@ -1,6 +1,6 @@
 
 'use server';
-/**
+/** */
  * @fileOverview A conversational AI agent for Minecraft Bedrock Edition addon development.
  *
  * Exports:
@@ -70,16 +70,33 @@ const chatFlow = ai.defineFlow(
     name: 'bedrockChatFlow',
     inputSchema: ChatInputSchema,
     // REMOVE outputSchema from the flow definition to prevent validation conflict
-    // outputSchema: ChatOutputSchema, 
+    // outputSchema: ChatOutputSchema,
     // The flow effectively outputs a ReadableStream<string> via invokeChat
   },
   async (input: ChatInput): Promise<ReadableStream<string>> => {
-    console.log('[chatFlow] Started with input:', input.message);
+    console.log('[chatFlow] Started with dynamic input (full object):', JSON.stringify(input, null, 2));
+    if (input.history && input.history.length > 0) {
+      input.history.forEach((h, i) => {
+        console.log(`[chatFlow] Dynamic input history[${i}]:`, JSON.stringify(h, null, 2));
+      });
+    }
+
+
     let promptStream: AsyncIterableIterator<any>;
     let promptResponsePromise: Promise<any>;
 
+    // Hardcoded minimal input for testing the prompt stream
+    const testInputForPrompt: ChatInput = {
+      message: "Hello, tell me about Minecraft.",
+      // history: [], // Intentionally empty
+      // imageDataUri: undefined, // Intentionally undefined
+    };
+    console.log('[chatFlow] Using hardcoded testInputForPrompt for bedrockChatPrompt.generateStream:', JSON.stringify(testInputForPrompt, null, 2));
+
+
     try {
-      ({stream: promptStream, response: promptResponsePromise} = bedrockChatPrompt.generateStream(input));
+      // Use testInputForPrompt for the actual call to isolate issues
+      ({stream: promptStream, response: promptResponsePromise} = bedrockChatPrompt.generateStream(testInputForPrompt));
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : String(e);
       console.error("[chatFlow] Error calling bedrockChatPrompt.generateStream:", errorMessage, e);
@@ -92,21 +109,19 @@ const chatFlow = ai.defineFlow(
     }
 
     const encoder = new TextEncoder();
-    let finalized = false; 
+    let finalized = false;
 
     const readableStream = new ReadableStream<string>({
       async start(controller) {
         console.log('[chatFlow_ReadableStream] Stream started.');
         try {
           for await (const chunk of promptStream) {
-            if (chunk?.text) { 
+            if (chunk?.text) {
               controller.enqueue(encoder.encode(chunk.text));
             }
           }
           // Wait for the full response to complete for Genkit's internal finalization, tracing, etc.
-          // The resolved value of promptResponsePromise (e.g., {text: "...", usage: ...}) is not directly
-          // used to form the streamed output here, as we are streaming chunks.
-          await promptResponsePromise; 
+          await promptResponsePromise;
           console.log('[chatFlow_ReadableStream] Prompt stream and response promise finished successfully.');
           if (!finalized) {
             controller.close();
@@ -129,7 +144,7 @@ const chatFlow = ai.defineFlow(
 
 
 export async function invokeChat(input: ChatInput): Promise<ReadableStream<string>> {
-  console.log('[invokeChat] Calling chatFlow with input:', input.message);
+  console.log('[invokeChat] Calling chatFlow with input message:', input.message);
   try {
     // chatFlow is expected to return Promise<ReadableStream<string>> directly
     const stream = await chatFlow(input);
@@ -146,4 +161,3 @@ export async function invokeChat(input: ChatInput): Promise<ReadableStream<strin
      });
   }
 }
-
