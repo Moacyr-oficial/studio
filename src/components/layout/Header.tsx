@@ -8,7 +8,7 @@ import { AccountSettingsDialog } from '@/components/features/AccountSettingsDial
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const DEFAULT_USER_NAME_FALLBACK = "User";
-const DEFAULT_AVATAR_FALLBACK = ""; 
+const DEFAULT_AVATAR_FALLBACK = "";
 
 export function Header() {
   const [isAccountSettingsOpen, setIsAccountSettingsOpen] = useState(false);
@@ -24,14 +24,14 @@ export function Header() {
       setUserAvatar(storedAvatar || DEFAULT_AVATAR_FALLBACK);
       setUserName(storedName || DEFAULT_USER_NAME_FALLBACK);
     }
-  }, [isAccountSettingsOpen]); 
+  }, [isAccountSettingsOpen]);
 
   const isCurrentPanelOpen = isSidebarMobile ? sidebarOpenMobile : sidebarOpen;
 
   return (
     <>
       <header className="py-3 px-4 md:px-6 sticky top-0 bg-background/80 backdrop-blur-md z-30">
-        <div className="container mx-auto flex items-center justify-between max-w-3xl">
+        <div className="w-full mx-auto flex items-center justify-between md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground">
               {isCurrentPanelOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -57,4 +57,3 @@ export function Header() {
     </>
   );
 }
-

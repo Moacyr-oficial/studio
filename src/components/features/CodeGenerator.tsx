@@ -35,6 +35,8 @@ interface ChatInterfaceProps {
   resetKey?: number;
 }
 
+const CHAT_AREA_MAX_WIDTH_CLASSES = "md:max-w-3xl lg:max-w-4xl xl:max-w-5xl";
+
 export function ChatInterface({ resetKey }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -179,10 +181,11 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
 
     try {
       const historyForAI = messages
-        .filter(msg => msg.id !== userMessage.id)
+        .filter(msg => msg.id !== userMessage.id) // Exclude the current user message being sent
         .map(msg => ({
           role: msg.role,
           parts: [{ text: msg.content }],
+          // Future: If model messages also had images, include them here too.
       }));
 
       const input: ChatInput = {
@@ -201,7 +204,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
         ...prevMessages,
         { id: aiMessageId, role: 'model', content: '' }, // Start with empty content for streaming
       ]);
-      setIsLoading(false); // Stop global loading indicator, typing happens per message
+      setIsLoading(false); 
 
       while (true) {
         const { value, done } = await reader.read();
@@ -225,17 +228,11 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
         description: `Could not get response. ${errorMessage}`,
       });
       const aiErrorMessage: Message = {
-        id: (Date.now() + 1).toString(), // Ensure unique ID
+        id: (Date.now() + 1).toString(), 
         role: 'model',
         content: `Sorry, I encountered an error: ${errorMessage}`,
       };
       setMessages((prevMessages) => [...prevMessages, aiErrorMessage]);
-    } finally {
-      // No longer setting isLoading to false here as it's handled earlier for streaming
-      if (typeof eventOrMessage !== 'string' || messages.length === 0) {
-        // Re-focus might be tricky with streaming, ensure it's desired.
-        // inputRef.current?.focus(); 
-      }
     }
   };
   
@@ -250,7 +247,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
   const inputBarHeightWithPreview = "pb-[152px]";
 
   return (
-    <div className={cn("flex flex-col h-full flex-grow w-full max-w-3xl mx-auto", imagePreview ? inputBarHeightWithPreview : inputBarHeight)}>
+    <div className={cn("flex flex-col h-full flex-grow w-full mx-auto", CHAT_AREA_MAX_WIDTH_CLASSES, imagePreview ? inputBarHeightWithPreview : inputBarHeight)}>
       {showWelcome && messages.length === 0 && (
         <div className="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-3 sm:mb-4">
@@ -317,7 +314,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
                   </Avatar>
                 )}
               </div>
-              {message.role === 'model' && message.content.length > 0 &&  ( // Show feedback only if model has content
+              {message.role === 'model' && message.content.length > 0 &&  ( 
                 <div className="flex items-center gap-1 mt-2 ml-11">
                   <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-primary" onClick={() => handleFeedback('positive', message.id)}>
                     <ThumbsUp className="h-4 w-4" />
@@ -329,7 +326,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
               )}
             </div>
           ))}
-           {isLoading && messages[messages.length -1]?.role === 'user' && ( // This loader is for initial submit before stream starts
+           {isLoading && messages[messages.length -1]?.role === 'user' && ( 
             <div className="flex justify-start items-start mt-6">
                 <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />
                 <div className="max-w-[80%] p-3.5 rounded-2xl shadow-sm bg-secondary text-secondary-foreground rounded-bl-none flex items-center">
@@ -341,7 +338,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       )}
 
       {error && (
-        <div className={cn("p-4 fixed left-1/2 transform -translate-x-1/2 w-full max-w-3xl z-10", `bottom-[${parseInt((imagePreview ? inputBarHeightWithPreview : inputBarHeight).replace('pb-[','').replace('px]',''))}px]` )}>
+        <div className={cn("p-4 fixed left-1/2 transform -translate-x-1/2 w-full z-10", CHAT_AREA_MAX_WIDTH_CLASSES, `bottom-[${parseInt((imagePreview ? inputBarHeightWithPreview : inputBarHeight).replace('pb-[','').replace('px]',''))}px]` )}>
           <Alert variant="destructive" className="shadow-md">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
@@ -351,13 +348,13 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       )}
 
       <div className="fixed bottom-0 left-0 right-0 bg-background z-10">
-        <div className="max-w-3xl mx-auto p-3 md:p-4">
+        <div className={cn("w-full mx-auto p-3 md:p-4", CHAT_AREA_MAX_WIDTH_CLASSES)}>
           {imagePreview && (
             <div className="relative mb-2 w-20 h-20">
               <Image
                 src={imagePreview}
                 alt="Selected preview"
-                fill // Use fill for better responsive image handling within fixed parent
+                fill 
                 objectFit="cover"
                 className="rounded-md border border-border"
               />
@@ -408,7 +405,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask bedrock aí..."
               className="flex-grow bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground h-8 px-2"
-              disabled={isLoading} // Global isLoading can still disable input during initial phase of submit
+              disabled={isLoading} 
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
                   e.preventDefault();
@@ -421,7 +418,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
             </Button>
             {inputValue.trim() || isLoading || imageFile ? (
               <Button type="submit" disabled={isLoading || (!inputValue.trim() && !imageFile)} size="icon" className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 w-8">
-                {isLoading ? ( // This spinner will show briefly before streaming starts
+                {isLoading ? ( 
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Send className="h-4 w-4" />
