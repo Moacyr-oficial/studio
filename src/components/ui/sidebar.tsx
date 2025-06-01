@@ -71,24 +71,11 @@ const SidebarProvider = React.forwardRef<
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
 
-    // This is the internal state of the sidebar.
-    // We use openProp and setOpenProp for control from outside the component.
     const [_open, _setOpen] = React.useState(defaultOpen)
     const open = openProp ?? _open
     
-    React.useEffect(() => {
-      // On initial mount for non-mobile, try to read the cookie
-      if (typeof window !== 'undefined' && !isMobile) {
-        const cookieValue = document.cookie
-          .split('; ')
-          .find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
-          ?.split('=')[1];
-        if (cookieValue) {
-          _setOpen(cookieValue === 'true');
-        }
-      }
-    }, [isMobile]);
-
+    // Removed useEffect that reads cookie for initial state.
+    // The sidebar will now always start based on `defaultOpen` or `openProp`.
 
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
@@ -99,7 +86,6 @@ const SidebarProvider = React.forwardRef<
           _setOpen(openState)
         }
 
-        // This sets the cookie to keep the sidebar state.
         if (typeof window !== 'undefined' && !isMobile) {
           document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
         }
@@ -107,14 +93,12 @@ const SidebarProvider = React.forwardRef<
       [setOpenProp, open, isMobile]
     )
 
-    // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
       return isMobile
         ? setOpenMobile((currentOpenMobile) => !currentOpenMobile)
         : setOpen((currentOpen) => !currentOpen)
     }, [isMobile, setOpen, setOpenMobile])
 
-    // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
         if (
@@ -130,8 +114,6 @@ const SidebarProvider = React.forwardRef<
       return () => window.removeEventListener("keydown", handleKeyDown)
     }, [toggleSidebar])
 
-    // We add a state so that we can do data-state="expanded" or "collapsed".
-    // This makes it easier to style the sidebar with Tailwind classes.
     const state = open ? "expanded" : "collapsed"
 
     const contextValue = React.useMemo<SidebarContext>(
