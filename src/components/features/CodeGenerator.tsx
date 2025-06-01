@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Send, AlertTriangle, Bot, PlusCircle, Image as ImageIcon, Mic, Sparkles, UserCircle } from 'lucide-react';
+import { Loader2, Send, AlertTriangle, Bot, PlusCircle, Image as ImageIcon, Mic, Sparkles, UserCircle, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { ChatMessageContent } from './ChatMessageContent';
 
 interface Message {
   id: string;
@@ -38,7 +39,6 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [showWelcome, setShowWelcome] = useState(true);
 
-  // Load messages from localStorage on mount and determine if welcome screen should show
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedMessages = localStorage.getItem('bedrockAIChatMessages');
@@ -48,7 +48,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
           initialMessages = JSON.parse(storedMessages);
         } catch (e) {
           console.error("Failed to parse messages from localStorage", e);
-          localStorage.removeItem('bedrockAIChatMessages'); // Clear corrupted data
+          localStorage.removeItem('bedrockAIChatMessages');
         }
       }
       setMessages(initialMessages);
@@ -59,7 +59,6 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
     }
   }, []);
 
-  // Save messages to localStorage whenever they change
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('bedrockAIChatMessages', JSON.stringify(messages));
@@ -78,7 +77,6 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
     }
   }, [showWelcome]);
 
-  // Handle chat reset
   useEffect(() => {
     if (resetKey !== undefined && resetKey > 0) {
       setMessages([]);
@@ -131,7 +129,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       }));
 
       const input: ChatInput = {
-        history: historyForAI.slice(0, -1), // Pass all but the current user message as history
+        history: historyForAI.slice(0, -1), 
         message: userMessage.content
       };
       const result = await invokeChat(input);
@@ -163,9 +161,16 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       }
     }
   };
+  
+  const handleFeedback = (feedbackType: 'positive' | 'negative', messageId: string) => {
+    toast({
+      title: "Feedback Received",
+      description: `Thank you for your ${feedbackType} feedback on message ${messageId}!`,
+    });
+    // Here you could add logic to send this feedback to a server
+  };
 
   const inputBarHeight = "pb-[72px]";
-
 
   return (
     <div className={cn("flex flex-col h-full flex-grow w-full max-w-3xl mx-auto", inputBarHeight)}>
@@ -198,30 +203,37 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       {!showWelcome && (
          <ScrollArea ref={scrollAreaRef} className="flex-grow p-4 md:p-6">
           {messages.map((message) => (
-            <div
-              key={message.id}
-              className={cn(
-                "flex w-full items-start mb-6",
-                message.role === 'user' ? 'justify-end' : 'justify-start'
-              )}
-            >
-              {message.role === 'model' && <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />}
+            <div key={message.id} className="mb-6">
               <div
                 className={cn(
-                  "max-w-[80%] p-3.5 rounded-2xl shadow-sm whitespace-pre-wrap text-sm leading-relaxed",
-                  message.role === 'user'
-                    ? 'bg-primary text-primary-foreground rounded-br-none'
-                    : 'bg-secondary text-secondary-foreground rounded-bl-none',
-                   "prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 prose-pre:bg-muted/50 prose-pre:p-3 prose-pre:rounded-md"
+                  "flex w-full items-start",
+                  message.role === 'user' ? 'justify-end' : 'justify-start'
                 )}
-                dangerouslySetInnerHTML={{ __html: message.content.replace(/```(\w+)?\n([\s\S]*?)```/g, (_match, lang, code) => {
-                  const languageClass = lang ? `language-${lang}` : '';
-                  // Basic escaping for HTML, consider a more robust library for production
-                  const escapedCode = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                  return `<pre class="${languageClass}"><code class="${languageClass}">${escapedCode.trim()}</code></pre>`;
-                }).replace(/(?<!<br\s*\/?>)\n/g, '<br />') }}
-              />
-              {message.role === 'user' && <UserCircle className="h-8 w-8 ml-3 mt-1 text-muted-foreground flex-shrink-0" />}
+              >
+                {message.role === 'model' && <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />}
+                <div
+                  className={cn(
+                    "max-w-[80%] p-3.5 rounded-2xl shadow-sm text-sm leading-relaxed",
+                    "prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-code:text-sm", // Adjusted prose for pre/code
+                    message.role === 'user'
+                      ? 'bg-primary text-primary-foreground rounded-br-none'
+                      : 'bg-secondary text-secondary-foreground rounded-bl-none'
+                  )}
+                >
+                  <ChatMessageContent content={message.content} />
+                </div>
+                {message.role === 'user' && <UserCircle className="h-8 w-8 ml-3 mt-1 text-muted-foreground flex-shrink-0" />}
+              </div>
+              {message.role === 'model' && (
+                <div className="flex items-center gap-1 mt-2 ml-11"> {/* Aligns with Bot icon + margin */}
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-primary" onClick={() => handleFeedback('positive', message.id)}>
+                    <ThumbsUp className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => handleFeedback('negative', message.id)}>
+                    <ThumbsDown className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           ))}
            {isLoading && messages[messages.length -1]?.role === 'user' && (
@@ -235,7 +247,6 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
         </ScrollArea>
       )}
 
-
       {error && (
         <div className={cn("p-4 fixed left-1/2 transform -translate-x-1/2 w-full max-w-3xl z-10", `bottom-[${parseInt(inputBarHeight.replace('pb-[','').replace('px]',''))}px]` )}>
           <Alert variant="destructive" className="shadow-md">
@@ -248,9 +259,9 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
 
       <div className="fixed bottom-0 left-0 right-0 bg-background z-10">
         <div className="max-w-3xl mx-auto p-3 md:p-4">
-          {!showWelcome && messages.length > 0 && messages.length < 10 && !isLoading && ( // Show more suggestions
+          {!showWelcome && messages.length > 0 && messages.length < 10 && !isLoading && ( 
             <div className="flex gap-2 mt-6 mb-4 overflow-x-auto pb-2 no-scrollbar">
-              {promptSuggestions.filter(s => !messages.some(m => m.content === s)).slice(0,3).map((suggestion) => ( // Show up to 3
+              {promptSuggestions.filter(s => !messages.some(m => m.content === s)).slice(0,3).map((suggestion) => ( 
                 <Button
                   key={suggestion}
                   variant="outline"
