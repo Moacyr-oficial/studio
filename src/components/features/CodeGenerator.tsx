@@ -108,7 +108,6 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       clearImageSelection();
       if (typeof window !== 'undefined') {
         localStorage.removeItem('bedrockAIChatMessages');
-        // Re-fetch user details on reset as well, in case they changed
         const storedAvatar = localStorage.getItem('bedrockAIUserAvatar');
         const storedName = localStorage.getItem('bedrockAIUserName');
         setUserAvatar(storedAvatar || DEFAULT_AVATAR_FALLBACK);
@@ -181,11 +180,10 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
 
     try {
       const historyForAI = messages
-        .filter(msg => msg.id !== userMessage.id) // Exclude the current user message being sent
+        .filter(msg => msg.id !== userMessage.id) 
         .map(msg => ({
           role: msg.role,
           parts: [{ text: msg.content }],
-          // Future: If model messages also had images, include them here too.
       }));
 
       const input: ChatInput = {
@@ -202,7 +200,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
 
       setMessages((prevMessages) => [
         ...prevMessages,
-        { id: aiMessageId, role: 'model', content: '' }, // Start with empty content for streaming
+        { id: aiMessageId, role: 'model', content: '' }, 
       ]);
       setIsLoading(false); 
 
@@ -245,12 +243,14 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
 
   const inputBarHeight = "pb-[72px]";
   const inputBarHeightWithPreview = "pb-[152px]";
+  const errorBottomOffset = parseInt((imagePreview ? inputBarHeightWithPreview : inputBarHeight).replace('pb-[','').replace('px]',''));
+
 
   return (
     <div className={cn("flex flex-col h-full flex-grow w-full mx-auto", CHAT_AREA_MAX_WIDTH_CLASSES, imagePreview ? inputBarHeightWithPreview : inputBarHeight)}>
       {showWelcome && messages.length === 0 && (
-        <div className="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-3 sm:mb-4">
+        <div className="flex-grow flex flex-col items-center justify-center p-4 md:p-6 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-3 md:mb-4">
             <span
               className="bg-clip-text text-transparent"
               style={{ backgroundImage: 'linear-gradient(to right, #7c3aed, #db2777)' }}
@@ -258,8 +258,8 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
               Hello!
             </span>
           </h1>
-          <p className="text-muted-foreground text-base sm:text-lg mb-8 sm:mb-12">How can I help you with Minecraft Bedrock addons today?</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
+          <p className="text-muted-foreground text-base md:text-lg mb-8 md:mb-12">How can I help you with Minecraft Bedrock addons today?</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-md">
             {promptSuggestions.map((suggestion) => (
               <Button
                 key={suggestion}
@@ -275,70 +275,74 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       )}
 
       {!showWelcome && (
-         <ScrollArea ref={scrollAreaRef} className="flex-grow p-4 md:p-6">
-          {messages.map((message) => (
-            <div key={message.id} className="mb-6">
-              <div
-                className={cn(
-                  "flex w-full items-start",
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
-                )}
-              >
-                {message.role === 'model' && <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />}
-                <div
-                  className={cn(
-                    "max-w-[80%] p-3.5 rounded-2xl shadow-sm text-sm leading-relaxed",
-                    "prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-code:text-sm",
-                    message.role === 'user'
-                      ? 'bg-primary text-primary-foreground rounded-br-none'
-                      : 'bg-secondary text-secondary-foreground rounded-bl-none'
-                  )}
-                >
-                  {message.imageDataUri && (
-                    <div className="my-2">
-                      <Image
-                        src={message.imageDataUri}
-                        alt="Uploaded image"
-                        width={200}
-                        height={200}
-                        className="rounded-md object-contain max-h-48"
-                      />
+         <div className="flex-grow flex flex-col overflow-hidden">
+            <div className="flex-grow overflow-hidden md:bg-card md:my-4 md:rounded-xl md:border md:border-border">
+                <ScrollArea ref={scrollAreaRef} className="h-full p-4 md:p-6">
+                {messages.map((message) => (
+                    <div key={message.id} className="mb-6">
+                    <div
+                        className={cn(
+                        "flex w-full items-start",
+                        message.role === 'user' ? 'justify-end' : 'justify-start'
+                        )}
+                    >
+                        {message.role === 'model' && <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />}
+                        <div
+                        className={cn(
+                            "max-w-[80%] p-3.5 rounded-2xl shadow-sm text-sm leading-relaxed",
+                            "prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-code:text-sm",
+                            message.role === 'user'
+                            ? 'bg-primary text-primary-foreground rounded-br-none'
+                            : 'bg-secondary text-secondary-foreground rounded-bl-none'
+                        )}
+                        >
+                        {message.imageDataUri && (
+                            <div className="my-2">
+                            <Image
+                                src={message.imageDataUri}
+                                alt="Uploaded image"
+                                width={200}
+                                height={200}
+                                className="rounded-md object-contain max-h-48"
+                            />
+                            </div>
+                        )}
+                        <ChatMessageContent content={message.content} />
+                        </div>
+                        {message.role === 'user' && (
+                        <Avatar className="h-8 w-8 ml-3 mt-1 flex-shrink-0 border border-border">
+                            <AvatarImage src={userAvatar || undefined} alt={userName} data-ai-hint="profile person" />
+                            <AvatarFallback>{userName?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
+                        </Avatar>
+                        )}
                     </div>
-                  )}
-                  <ChatMessageContent content={message.content} />
-                </div>
-                {message.role === 'user' && (
-                  <Avatar className="h-8 w-8 ml-3 mt-1 flex-shrink-0 border border-border">
-                    <AvatarImage src={userAvatar || undefined} alt={userName} data-ai-hint="profile person" />
-                    <AvatarFallback>{userName?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
-              {message.role === 'model' && message.content.length > 0 &&  ( 
-                <div className="flex items-center gap-1 mt-2 ml-11">
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-primary" onClick={() => handleFeedback('positive', message.id)}>
-                    <ThumbsUp className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => handleFeedback('negative', message.id)}>
-                    <ThumbsDown className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
+                    {message.role === 'model' && message.content.length > 0 &&  ( 
+                        <div className="flex items-center gap-1 mt-2 ml-11">
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-primary" onClick={() => handleFeedback('positive', message.id)}>
+                            <ThumbsUp className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => handleFeedback('negative', message.id)}>
+                            <ThumbsDown className="h-4 w-4" />
+                        </Button>
+                        </div>
+                    )}
+                    </div>
+                ))}
+                {isLoading && messages[messages.length -1]?.role === 'user' && ( 
+                    <div className="flex justify-start items-start mt-6">
+                        <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />
+                        <div className="max-w-[80%] p-3.5 rounded-2xl shadow-sm bg-secondary text-secondary-foreground rounded-bl-none flex items-center">
+                            <Loader2 className="h-5 w-5 animate-spin mr-2 text-primary" /> Thinking...
+                        </div>
+                    </div>
+                    )}
+                </ScrollArea>
             </div>
-          ))}
-           {isLoading && messages[messages.length -1]?.role === 'user' && ( 
-            <div className="flex justify-start items-start mt-6">
-                <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />
-                <div className="max-w-[80%] p-3.5 rounded-2xl shadow-sm bg-secondary text-secondary-foreground rounded-bl-none flex items-center">
-                    <Loader2 className="h-5 w-5 animate-spin mr-2 text-primary" /> Thinking...
-                </div>
-            </div>
-            )}
-        </ScrollArea>
+         </div>
       )}
 
       {error && (
-        <div className={cn("p-4 fixed left-1/2 transform -translate-x-1/2 w-full z-10", CHAT_AREA_MAX_WIDTH_CLASSES, `bottom-[${parseInt((imagePreview ? inputBarHeightWithPreview : inputBarHeight).replace('pb-[','').replace('px]',''))}px]` )}>
+        <div className={cn("p-4 fixed left-1/2 transform -translate-x-1/2 w-full z-10", CHAT_AREA_MAX_WIDTH_CLASSES)} style={{ bottom: `${errorBottomOffset}px` }}>
           <Alert variant="destructive" className="shadow-md">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
@@ -347,7 +351,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-background z-10">
+      <div className="fixed bottom-0 left-0 right-0 bg-background z-10 md:border-t md:border-border">
         <div className={cn("w-full mx-auto p-3 md:p-4", CHAT_AREA_MAX_WIDTH_CLASSES)}>
           {imagePreview && (
             <div className="relative mb-2 w-20 h-20">
@@ -444,3 +448,5 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
     </div>
   );
 }
+
+    
