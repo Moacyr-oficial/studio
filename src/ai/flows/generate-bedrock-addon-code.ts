@@ -39,7 +39,8 @@ export type ChatOutput = z.infer<typeof ChatOutputSchema>;
 const bedrockChatPrompt = ai.definePrompt({
   name: 'bedrockChatPrompt',
   input: {schema: ChatInputSchema},
-  output: {schema: ChatOutputSchema}, 
+  output: {schema: ChatOutputSchema},
+  model: 'googleai/gemini-2.0-flash', // Explicitly specify the model for the prompt
   prompt: `You are a friendly and expert Minecraft Bedrock Edition addon development assistant.
 Your goal is to help users create addon code, answer their questions about Bedrock addon development, and provide guidance.
 Use the provided conversation history to understand the context of the user's current message.
@@ -66,16 +67,34 @@ const chatFlow = ai.defineFlow(
   {
     name: 'bedrockChatFlow',
     inputSchema: ChatInputSchema,
-    outputSchema: ChatOutputSchema, // This can be the schema for the complete output
+    outputSchema: ChatOutputSchema, // This describes the final data structure if the flow were to complete fully.
+                                   // For streaming, the actual return type of the function is ReadableStream<string>.
   },
   async (input: ChatInput): Promise<ReadableStream<string>> => {
     console.log('[chatFlow] Started with input:', input.message);
-    const {stream: promptStream, response: promptResponsePromise} = bedrockChatPrompt.generateStream(input);
+    let promptStream: AsyncIterableIterator<any>;
+    let promptResponsePromise: Promise<any>;
+
+    try {
+      // This is the critical call that was failing.
+      // By adding `model` to bedrockChatPrompt, we hope .generateStream is now available.
+      ({stream: promptStream, response: promptResponsePromise} = bedrockChatPrompt.generateStream(input));
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      console.error("[chatFlow] Error calling bedrockChatPrompt.generateStream:", errorMessage, e);
+      // Construct a stream that emits the error and then closes.
+      return new ReadableStream<string>({
+        start(controller) {
+          controller.error(new Error(`Failed to start AI stream: ${errorMessage}`));
+        }
+      });
+    }
+
     const encoder = new TextEncoder();
+    let finalized = false; // Flag to ensure controller is finalized only once
 
     const readableStream = new ReadableStream<string>({
       async start(controller) {
-        let finalized = false; // Flag to ensure controller is finalized only once
         console.log('[chatFlow_ReadableStream] Stream started.');
         try {
           for await (const chunk of promptStream) {
