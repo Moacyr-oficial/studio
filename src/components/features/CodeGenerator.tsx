@@ -100,7 +100,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
       setIsLoading(false);
       setError(null);
       setShowWelcome(true);
-      clearImageSelection(); // Uses the clearImageSelection from this scope
+      clearImageSelection(); 
       if (typeof window !== 'undefined') {
         localStorage.removeItem('bedrockAIChatMessages');
         const storedAvatar = localStorage.getItem('bedrockAIUserAvatar');
@@ -109,7 +109,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
         setUserName(storedName || DEFAULT_USER_NAME_FALLBACK);
       }
     }
-  }, [resetKey]); // Added clearImageSelection to dependencies if it were memoized, but it's fine here.
+  }, [resetKey, clearImageSelection]); 
 
   const clearImageSelection = useCallback(() => {
     setImagePreview(null);
@@ -146,11 +146,8 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
     }
     setIsLoading(true);
     setError(null);
-    const currentImagePreview = imagePreview; // Capture before clearing
+    const currentImagePreview = imagePreview; 
     
-    // Clear image selection after capturing its current state for the message
-    // but before the AI call, so UI updates promptly.
-    // This was previously inside the ChatInterface component, now centralized here.
     clearImageSelection();
 
 
@@ -212,9 +209,9 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
 
   const handleSuggestionClick = useCallback((suggestion: string) => {
     if (inputRef.current) inputRef.current.focus();
-    setShowWelcome(false); // Ensure welcome screen is hidden
+    setShowWelcome(false); 
     handleSubmit(suggestion);
-  }, [handleSubmit]); // Add inputRef to dependencies if its focus changes
+  }, [handleSubmit]); 
 
   const handleImageButtonClick = useCallback(() => {
     imageInputRef.current?.click();
@@ -243,7 +240,6 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
   }, [toast]);
 
   if (isMobile === undefined) {
-    // Optional: Render a loading spinner or null while determining client type
     return <div className="flex-grow flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
@@ -269,9 +265,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
     clearImageSelection,
     handleFeedback,
     promptSuggestions,
-    setIsLoading, // Pass down if child needs to manipulate it directly (e.g. cancelling a stream)
-    setError, // Same as above
-    setShowWelcome, // For suggestion click inside child
+    setShowWelcome, 
   };
 
   return isMobile ? <ChatInterfaceMobile {...displayProps} /> : <ChatInterfacePC {...displayProps} />;

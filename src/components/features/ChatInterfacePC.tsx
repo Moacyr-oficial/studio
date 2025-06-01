@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, Send, AlertTriangle, Bot, PlusCircle, Image as ImageIcon, Mic, Sparkles, ThumbsUp, ThumbsDown, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ChatMessageContent } from './ChatMessageContent';
-import type { Message } from './CodeGenerator'; // Assuming Message type is exported or defined here
+import type { Message } from './CodeGenerator'; 
 
 // Props interface for PC specific chat display
 interface ChatInterfacePCProps {
@@ -30,7 +30,7 @@ interface ChatInterfacePCProps {
   imageInputRef: React.RefObject<HTMLInputElement>;
 
   setInputValue: (value: string) => void;
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>; // Needed for optimistic updates or direct manipulation
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>; 
   setShowWelcome: (value: boolean) => void;
 
   handleSubmit: (eventOrMessage?: FormEvent<HTMLFormElement> | string) => Promise<void>;
@@ -61,9 +61,9 @@ export function ChatInterfacePC({
   imageInputRef,
   setInputValue,
   // setMessages, // Not directly used by this component's JSX, but passed for consistency if needed
-  setShowWelcome,
+  // setShowWelcome, // This is passed directly
   handleSubmit,
-  // handleSuggestionClick, // This is now handled by the parent which calls setShowWelcome & handleSubmit
+  handleSuggestionClick, 
   handleImageButtonClick,
   handleImageChange,
   clearImageSelection,
@@ -71,14 +71,8 @@ export function ChatInterfacePC({
   promptSuggestions,
 }: ChatInterfacePCProps) {
 
-  const handleLocalSuggestionClick = (suggestion: string) => {
-    setShowWelcome(false); // Manage local state if needed or call parent's handleSuggestionClick
-    handleSubmit(suggestion); // Call parent's handleSubmit
-    if (inputRef.current) inputRef.current.focus();
-  };
-
   const inputBarHeight = "pb-[72px]";
-  const inputBarHeightWithPreview = "pb-[152px]"; // Approx 80px for the preview
+  const inputBarHeightWithPreview = "pb-[152px]"; 
   const errorBottomOffset = parseInt((imagePreview ? inputBarHeightWithPreview : inputBarHeight).replace('pb-[','').replace('px]',''));
 
   return (
@@ -104,7 +98,7 @@ export function ChatInterfacePC({
                 key={suggestion}
                 variant="ghost"
                 className="bg-secondary hover:bg-muted text-secondary-foreground text-left justify-start p-4 h-auto text-sm rounded-xl whitespace-normal"
-                onClick={() => handleLocalSuggestionClick(suggestion)}
+                onClick={() => handleSuggestionClick(suggestion)}
               >
                 {suggestion}
               </Button>
@@ -115,7 +109,6 @@ export function ChatInterfacePC({
 
       {!showWelcome && (
          <div className="flex-grow flex flex-col overflow-hidden">
-            {/* PC specific styling: card-like chat area */}
             <div className="flex-grow overflow-hidden my-4 rounded-xl border border-border bg-card">
                 <ScrollArea ref={scrollAreaRef} className="h-full p-6">
                 {messages.map((message) => (
@@ -131,10 +124,9 @@ export function ChatInterfacePC({
                         className={cn(
                             "max-w-[80%] p-3.5 rounded-2xl shadow-sm text-sm leading-relaxed",
                             "prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-code:text-sm",
-                             // User messages have distinct bg on PC too, but within the card
                             message.role === 'user'
                             ? 'bg-primary text-primary-foreground rounded-br-none'
-                            : 'bg-secondary text-secondary-foreground rounded-bl-none' // Model messages use secondary within card
+                            : 'bg-secondary text-secondary-foreground rounded-bl-none' 
                         )}
                         >
                         {message.imageDataUri && (
@@ -192,7 +184,6 @@ export function ChatInterfacePC({
         </div>
       )}
 
-      {/* PC specific input bar styling: top border */}
       <div className={cn("fixed bottom-0 left-0 right-0 bg-background z-10 border-t border-border")}>
         <div className={cn("w-full mx-auto p-4", CHAT_AREA_MAX_WIDTH_CLASSES_PC)}>
           {imagePreview && (
@@ -290,4 +281,3 @@ export function ChatInterfacePC({
     </div>
   );
 }
-

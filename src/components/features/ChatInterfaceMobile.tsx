@@ -43,7 +43,6 @@ interface ChatInterfaceMobileProps {
   promptSuggestions: string[];
 }
 
-// Mobile typically uses full width, so max-width classes are less restrictive or not applied at top level here.
 const CHAT_AREA_MAX_WIDTH_CLASSES_MOBILE = "w-full";
 
 
@@ -61,22 +60,16 @@ export function ChatInterfaceMobile({
   scrollAreaRef,
   imageInputRef,
   setInputValue,
-  // setMessages, // Not directly used by this component's JSX
-  setShowWelcome,
+  // setMessages, 
+  // setShowWelcome, // Passed directly
   handleSubmit,
-  // handleSuggestionClick, // Handled by parent
+  handleSuggestionClick, 
   handleImageButtonClick,
   handleImageChange,
   clearImageSelection,
   handleFeedback,
   promptSuggestions,
 }: ChatInterfaceMobileProps) {
-
-  const handleLocalSuggestionClick = (suggestion: string) => {
-    setShowWelcome(false);
-    handleSubmit(suggestion);
-    if (inputRef.current) inputRef.current.focus();
-  };
   
   const inputBarHeight = "pb-[72px]";
   const inputBarHeightWithPreview = "pb-[152px]";
@@ -96,14 +89,13 @@ export function ChatInterfaceMobile({
             </span>
           </h1>
           <p className="text-muted-foreground text-base mb-8">How can I help you with Minecraft Bedrock addons today?</p>
-          {/* Mobile specific: 1-column suggestions */}
           <div className="grid grid-cols-1 gap-3 w-full max-w-xs">
             {promptSuggestions.map((suggestion) => (
               <Button
                 key={suggestion}
                 variant="ghost"
                 className="bg-secondary hover:bg-muted text-secondary-foreground text-left justify-start p-4 h-auto text-sm rounded-xl whitespace-normal"
-                onClick={() => handleLocalSuggestionClick(suggestion)}
+                onClick={() => handleSuggestionClick(suggestion)}
               >
                 {suggestion}
               </Button>
@@ -114,8 +106,7 @@ export function ChatInterfaceMobile({
 
       {!showWelcome && (
          <div className="flex-grow flex flex-col overflow-hidden">
-            {/* Mobile specific styling: uses page background, no card */}
-            <div className="flex-grow overflow-hidden"> {/* Potentially remove bg-card and my-4 for mobile */}
+            <div className="flex-grow overflow-hidden"> 
                 <ScrollArea ref={scrollAreaRef} className="h-full p-4">
                 {messages.map((message) => (
                     <div key={message.id} className="mb-6">
@@ -287,4 +278,3 @@ export function ChatInterfaceMobile({
     </div>
   );
 }
-
