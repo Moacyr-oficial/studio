@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A conversational AI agent for Minecraft Bedrock Edition addon development.
@@ -23,6 +24,9 @@ const MessageSchema = z.object({
 const ChatInputSchema = z.object({
   history: z.array(MessageSchema).optional().describe("The conversation history."),
   message: z.string().describe('The latest user message.'),
+  imageDataUri: z.string().optional().describe(
+    "An image uploaded by the user, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+  ),
 });
 export type ChatInput = z.infer<typeof ChatInputSchema>;
 
@@ -51,6 +55,11 @@ Conversation History:
 {{this.role}}: {{this.parts.[0].text}}
 {{/each}}
 
+{{#if imageDataUri}}
+User has also provided an image related to their query:
+{{media url=imageDataUri}}
+{{/if}}
+
 Current User Message: {{{message}}}
 
 Your Response:`,
@@ -67,3 +76,4 @@ const chatFlow = ai.defineFlow(
     return output!;
   }
 );
+

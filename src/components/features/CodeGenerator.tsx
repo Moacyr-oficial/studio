@@ -7,15 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Send, AlertTriangle, Bot, PlusCircle, Image as ImageIcon, Mic, Sparkles, UserCircle, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Loader2, Send, AlertTriangle, Bot, PlusCircle, Image as ImageIcon, Mic, Sparkles, UserCircle, ThumbsUp, ThumbsDown, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ChatMessageContent } from './ChatMessageContent';
+import Image from 'next/image'; // Import next/image
 
 interface Message {
   id: string;
   role: 'user' | 'model';
   content: string;
+  imageDataUri?: string; // Add to message type if you want to display sent images
 }
 
 const promptSuggestions = [
@@ -37,7 +39,12 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const [showWelcome, setShowWelcome] = useState(true);
+
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -84,6 +91,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       setIsLoading(false);
       setError(null);
       setShowWelcome(true);
+      clearImageSelection();
       if (typeof window !== 'undefined') {
         localStorage.removeItem('bedrockAIChatMessages');
       }
@@ -96,22 +104,51 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
     inputRef.current?.focus();
   };
 
+  const handleImageButtonClick = () => {
+    imageInputRef.current?.click();
+  };
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+    // Clear the input value to allow re-selecting the same file
+    if (event.target) {
+      event.target.value = "";
+    }
+  };
+
+  const clearImageSelection = () => {
+    setImagePreview(null);
+    setImageFile(null);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (eventOrMessage?: FormEvent<HTMLFormElement> | string) => {
-    let currentMessage = '';
+    let currentMessageText = '';
     if (typeof eventOrMessage === 'string') {
-      currentMessage = eventOrMessage;
+      currentMessageText = eventOrMessage;
     } else {
       eventOrMessage?.preventDefault();
-      currentMessage = inputValue;
+      currentMessageText = inputValue;
     }
 
-    if (!currentMessage.trim()) return;
+    if (!currentMessageText.trim() && !imageFile) return; // Allow sending image without text
     if (showWelcome) setShowWelcome(false);
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: currentMessage,
+      content: currentMessageText,
+      ...(imagePreview && { imageDataUri: imagePreview }), // Include image if present
     };
 
     setMessages((prevMessages) => [...prevMessages, userMessage]);
@@ -121,16 +158,23 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
     }
     setIsLoading(true);
     setError(null);
+    const currentImagePreview = imagePreview; // Capture current preview before clearing
+    clearImageSelection(); // Clear preview for next input
 
     try {
-      const historyForAI = messages.map(msg => ({
-        role: msg.role,
-        parts: [{ text: msg.content }],
+      const historyForAI = messages
+        .filter(msg => msg.id !== userMessage.id) // Exclude the current message being sent from history
+        .map(msg => ({
+          role: msg.role,
+          parts: [{ text: msg.content }],
+          // We don't send historical images to the AI in this setup, only the current one.
+          // If historical image context is needed, the schema and logic would need to be more complex.
       }));
 
       const input: ChatInput = {
-        history: historyForAI.slice(0, -1), 
-        message: userMessage.content
+        history: historyForAI,
+        message: userMessage.content,
+        ...(currentImagePreview && { imageDataUri: currentImagePreview }),
       };
       const result = await invokeChat(input);
 
@@ -170,10 +214,12 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
     // Here you could add logic to send this feedback to a server
   };
 
-  const inputBarHeight = "pb-[72px]";
+  const inputBarHeight = "pb-[72px]"; // Default height
+  const inputBarHeightWithPreview = "pb-[152px]"; // Height when image preview is shown (72 + 80 for preview)
+
 
   return (
-    <div className={cn("flex flex-col h-full flex-grow w-full max-w-3xl mx-auto", inputBarHeight)}>
+    <div className={cn("flex flex-col h-full flex-grow w-full max-w-3xl mx-auto", imagePreview ? inputBarHeightWithPreview : inputBarHeight)}>
       {showWelcome && messages.length === 0 && (
         <div className="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-3 sm:mb-4">
@@ -222,6 +268,17 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
                       : 'bg-secondary text-secondary-foreground rounded-bl-none'
                   )}
                 >
+                  {message.imageDataUri && (
+                    <div className="my-2">
+                      <Image
+                        src={message.imageDataUri}
+                        alt="Uploaded image"
+                        width={200} // Adjust as needed
+                        height={200} // Adjust as needed
+                        className="rounded-md object-contain max-h-48"
+                      />
+                    </div>
+                  )}
                   <ChatMessageContent content={message.content} />
                 </div>
                 {message.role === 'user' && <UserCircle className="h-8 w-8 ml-3 mt-1 text-muted-foreground flex-shrink-0" />}
@@ -250,7 +307,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       )}
 
       {error && (
-        <div className={cn("p-4 fixed left-1/2 transform -translate-x-1/2 w-full max-w-3xl z-10", `bottom-[${parseInt(inputBarHeight.replace('pb-[','').replace('px]',''))}px]` )}>
+        <div className={cn("p-4 fixed left-1/2 transform -translate-x-1/2 w-full max-w-3xl z-10", `bottom-[${parseInt((imagePreview ? inputBarHeightWithPreview : inputBarHeight).replace('pb-[','').replace('px]',''))}px]` )}>
           <Alert variant="destructive" className="shadow-md">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
@@ -261,7 +318,26 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
 
       <div className="fixed bottom-0 left-0 right-0 bg-background z-10">
         <div className="max-w-3xl mx-auto p-3 md:p-4">
-          {!showWelcome && messages.length > 0 && messages.length < 10 && !isLoading && ( 
+          {imagePreview && (
+            <div className="relative mb-2 w-20 h-20">
+              <Image
+                src={imagePreview}
+                alt="Selected preview"
+                layout="fill"
+                objectFit="cover"
+                className="rounded-md border border-border"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute -top-2 -right-2 h-6 w-6 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/80"
+                onClick={clearImageSelection}
+              >
+                <XCircle className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          {!showWelcome && messages.length > 0 && messages.length < 10 && !isLoading && !imagePreview && ( 
             <div className="flex gap-2 mt-6 mb-4 overflow-x-auto pb-2 no-scrollbar">
               {promptSuggestions.filter(s => !messages.some(m => m.content === s)).slice(0,3).map((suggestion) => ( 
                 <Button
@@ -282,7 +358,14 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
             <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-8 w-8">
               <PlusCircle className="h-4 w-4" />
             </Button>
-            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-8 w-8">
+            <input
+              type="file"
+              ref={imageInputRef}
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: 'none' }}
+            />
+            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-8 w-8" onClick={handleImageButtonClick}>
               <ImageIcon className="h-4 w-4" />
             </Button>
             <Input
@@ -302,8 +385,8 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
             <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-8 w-8">
               <Mic className="h-4 w-4" />
             </Button>
-            {inputValue.trim() || isLoading ? (
-              <Button type="submit" disabled={isLoading || !inputValue.trim()} size="icon" className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 w-8">
+            {inputValue.trim() || isLoading || imageFile ? (
+              <Button type="submit" disabled={isLoading || (!inputValue.trim() && !imageFile)} size="icon" className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 w-8">
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
@@ -330,3 +413,4 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
     </div>
   );
 }
+
