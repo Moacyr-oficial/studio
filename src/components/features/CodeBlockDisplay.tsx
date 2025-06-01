@@ -87,9 +87,10 @@ export const CodeBlockDisplay: React.FC<CodeBlockDisplayProps> = ({ code, langua
           Use code with caution.
         </span>
         <span className="text-xs font-medium text-popover-foreground/70 uppercase">
-          {language || 'TEXT'}
+          {language?.toUpperCase() || 'TEXT'}
         </span>
       </div>
     </div>
   );
 };
+
