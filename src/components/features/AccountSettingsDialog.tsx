@@ -70,14 +70,14 @@ export function AccountSettingsDialog({ isOpen, onOpenChange }: AccountSettingsD
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] rounded-xl shadow-2xl bg-background">
-        <DialogHeader className="pt-2">
+      <DialogContent className="sm:max-w-[480px] rounded-xl shadow-2xl bg-background border-0">
+        <DialogHeader>
           <DialogTitle className="text-2xl font-semibold text-foreground">Account Settings</DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Manage your profile and preferences.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-6 py-6 px-2">
+        <div className="grid gap-6 py-4">
           <div className="flex flex-col items-center gap-4">
             <Avatar className="h-28 w-28 border-2 border-primary/50">
               <AvatarImage src="https://placehold.co/120x120.png" alt="User avatar" data-ai-hint="profile person" />
@@ -110,7 +110,7 @@ export function AccountSettingsDialog({ isOpen, onOpenChange }: AccountSettingsD
             </Button>
           </div>
         </div>
-        <DialogFooter className="pb-4 px-6">
+        <DialogFooter className="pb-4 pt-2">
           <DialogClose asChild>
             <Button type="button" variant="outline" className="rounded-lg text-base px-6 py-5 border-border hover:bg-accent hover:text-accent-foreground text-foreground" disabled={isSaving}>
               Cancel
