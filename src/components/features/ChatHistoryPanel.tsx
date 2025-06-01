@@ -1,8 +1,9 @@
 
 "use client";
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Rabbit, ToyBrick, Map as MapIcon } from 'lucide-react';
+import { PlusCircle, Rabbit, ToyBrick, Map as MapIcon, Trash2 } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -14,13 +15,23 @@ import {
   SidebarSeparator,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { useToast } from '@/hooks/use-toast';
 
 interface ChatHistoryPanelProps {
   onNewChat: () => void;
 }
 
+const initialMockHistory = [
+  {id: "1", title: "Create a flying pig"},
+  {id: "2", title: "Explain behavior packs"},
+  {id: "3", title: "How to add custom sounds?"},
+  {id: "4", title: "Generate a simple sword item"},
+];
+
 export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
   const { isMobile, setOpenMobile, state: sidebarState } = useSidebar();
+  const { toast } = useToast();
+  const [historyItems, setHistoryItems] = useState(initialMockHistory);
 
   const handleNewChatClick = () => {
     onNewChat();
@@ -29,12 +40,13 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
     }
   };
 
-  const mockHistory = [
-    {id: "1", title: "Create a flying pig"},
-    {id: "2", title: "Explain behavior packs"},
-    {id: "3", title: "How to add custom sounds?"},
-    {id: "4", title: "Generate a simple sword item"},
-  ];
+  const handleDeleteItem = (id: string, title: string) => {
+    setHistoryItems(prev => prev.filter(item => item.id !== id));
+    toast({
+      title: "Chat Deleted",
+      description: `"${title}" has been removed from history.`,
+    });
+  };
 
   const specializedChats = [
     { id: "entity-gen", title: "Entity Generator", icon: Rabbit, action: handleNewChatClick },
@@ -47,7 +59,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
       side="left"
       collapsible="icon"
       variant="sidebar"
-      className="z-40 border-r-0 rounded-r-2xl" // Ensure border-r-0 and rounded-r-2xl are applied
+      className="z-40 border-r-0 rounded-r-2xl"
     >
       <SidebarHeader className="px-3 pt-3 pb-2 text-center group-data-[collapsible=icon]:hidden">
         <h2 className="font-headline text-lg font-semibold">Conversation</h2>
@@ -65,7 +77,6 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
         </SidebarMenuButton>
       </div>
 
-      {/* Specialized Chat Options */}
       <div className="px-2 pb-1 group-data-[collapsible=icon]:p-0">
         <SidebarMenu>
           {specializedChats.map((chat) => (
@@ -93,19 +104,31 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
                 RECENT
              </div>
             <SidebarMenu>
-                {mockHistory.map((item) => (
-                <SidebarMenuItem key={item.id}>
+                {historyItems.map((item) => (
+                <SidebarMenuItem key={item.id} className="group/item">
                     <SidebarMenuButton
                         className="font-normal text-sm h-auto py-1.5 px-2 w-full justify-start group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:p-0"
                         variant="ghost"
                         tooltip={sidebarState === 'collapsed' ? item.title : undefined}
                     >
-                    <span className="truncate group-data-[collapsible=icon]:hidden">{item.title}</span>
-                    {/* Display initials when collapsed */}
-                    <span className="hidden group-data-[collapsible=icon]:inline-block text-xs">
-                        {item.title.substring(0,2).toUpperCase()}
-                    </span>
+                      <span className="truncate group-data-[collapsible=icon]:hidden flex-grow">{item.title}</span>
+                      <span className="hidden group-data-[collapsible=icon]:inline-block text-xs">
+                          {item.title.substring(0,2).toUpperCase()}
+                      </span>
                     </SidebarMenuButton>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 opacity-0 group-hover/item:opacity-100 focus-visible:opacity-100 group-data-[collapsible=icon]:hidden text-muted-foreground hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent SidebarMenuButton click
+                        handleDeleteItem(item.id, item.title);
+                      }}
+                      aria-label={`Delete chat: ${item.title}`}
+                      tooltip={sidebarState === 'collapsed' ? `Delete: ${item.title}` : undefined}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                 </SidebarMenuItem>
                 ))}
             </SidebarMenu>
@@ -115,3 +138,4 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
     </Sidebar>
   );
 }
+
