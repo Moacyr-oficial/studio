@@ -41,28 +41,31 @@ export type ChatOutput = z.infer<typeof ChatOutputSchema>;
 const bedrockChatPrompt = ai.definePrompt({
   name: 'bedrockChatPrompt',
   input: {schema: ChatInputSchema},
-  // output: {schema: ChatOutputSchema}, // KEEP THIS COMMENTED OUT for raw text streaming
   model: 'googleai/gemini-2.0-flash', // Ensure model is specified for the prompt
-  prompt: `You are a friendly and expert Minecraft Bedrock Edition addon development assistant.
-Your goal is to help users create addon code, answer their questions about Bedrock addon development, and provide guidance.
-Use the provided conversation history to understand the context of the user's current message.
-If the user asks for code, generate a concise and correct Bedrock Edition addon code snippet based on their request and the conversation history. Format code blocks clearly.
-If the user asks a question, provide a clear and helpful answer.
-If the user's request is ambiguous, ask clarifying questions.
+  // Using a very simplified prompt string for diagnostics.
+  // If this works, the original complex prompt string or its interaction with history/images was the issue.
+  prompt: `User message: {{{message}}} Your response:`,
+  // Original complex prompt:
+  // prompt: `You are a friendly and expert Minecraft Bedrock Edition addon development assistant.
+  // Your goal is to help users create addon code, answer their questions about Bedrock addon development, and provide guidance.
+  // Use the provided conversation history to understand the context of the user's current message.
+  // If the user asks for code, generate a concise and correct Bedrock Edition addon code snippet based on their request and the conversation history. Format code blocks clearly.
+  // If the user asks a question, provide a clear and helpful answer.
+  // If the user's request is ambiguous, ask clarifying questions.
 
-Conversation History:
-{{#each history}}
-{{this.role}}: {{this.parts.[0].text}}
-{{/each}}
+  // Conversation History:
+  // {{#each history}}
+  // {{this.role}}: {{this.parts.[0].text}}
+  // {{/each}}
 
-{{#if imageDataUri}}
-User has also provided an image related to their query:
-{{media url=imageDataUri}}
-{{/if}}
+  // {{#if imageDataUri}}
+  // User has also provided an image related to their query:
+  // {{media url=imageDataUri}}
+  // {{/if}}
 
-Current User Message: {{{message}}}
+  // Current User Message: {{{message}}}
 
-Your Response:`,
+  // Your Response:`,
 });
 
 const chatFlow = ai.defineFlow(
@@ -75,12 +78,8 @@ const chatFlow = ai.defineFlow(
   },
   async (input: ChatInput): Promise<ReadableStream<string>> => {
     console.log('[chatFlow] Started with dynamic input (full object):', JSON.stringify(input, null, 2));
-    if (input.history && input.history.length > 0) {
-      input.history.forEach((h, i) => {
-        console.log(`[chatFlow] Dynamic input history[${i}]:`, JSON.stringify(h, null, 2));
-      });
-    }
-
+    // Note: The 'input' parameter to chatFlow is the actual dynamic input from the client.
+    // However, for diagnostics, bedrockChatPrompt.generateStream is called with 'testInputForPrompt'.
 
     let promptStream: AsyncIterableIterator<any>;
     let promptResponsePromise: Promise<any>;
@@ -88,10 +87,10 @@ const chatFlow = ai.defineFlow(
     // Hardcoded minimal input for testing the prompt stream
     const testInputForPrompt: ChatInput = {
       message: "Hello, tell me about Minecraft.",
-      // history: [], // Intentionally empty
-      // imageDataUri: undefined, // Intentionally undefined
+      // history: [], // Intentionally empty or undefined for this test
+      // imageDataUri: undefined, // Intentionally undefined for this test
     };
-    console.log('[chatFlow] Using hardcoded testInputForPrompt for bedrockChatPrompt.generateStream:', JSON.stringify(testInputForPrompt, null, 2));
+    console.log('[chatFlow] Using testInputForPrompt for bedrockChatPrompt.generateStream:', JSON.stringify(testInputForPrompt, null, 2));
 
 
     try {
@@ -118,6 +117,9 @@ const chatFlow = ai.defineFlow(
           for await (const chunk of promptStream) {
             if (chunk?.text) {
               controller.enqueue(encoder.encode(chunk.text));
+            } else {
+                // If chunk is not as expected, log it for debugging
+                console.warn('[chatFlow_ReadableStream] Received unexpected chunk structure:', JSON.stringify(chunk, null, 2));
             }
           }
           // Wait for the full response to complete for Genkit's internal finalization, tracing, etc.
