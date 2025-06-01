@@ -35,7 +35,7 @@ export default function RootLayout({
   // You can create a separate component for dynamic metadata if needed.
 
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning={true}>
       <head>
         <title>bedrock aí</title>
         <meta name="description" content="Generate Minecraft Bedrock Edition addons with AI" />
