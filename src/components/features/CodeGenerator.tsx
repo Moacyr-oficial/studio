@@ -7,17 +7,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Send, AlertTriangle, Bot, PlusCircle, Image as ImageIcon, Mic, Sparkles, UserCircle, ThumbsUp, ThumbsDown, XCircle } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Loader2, Send, AlertTriangle, Bot, PlusCircle, Image as ImageIcon, Mic, Sparkles, ThumbsUp, ThumbsDown, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ChatMessageContent } from './ChatMessageContent';
-import Image from 'next/image'; // Import next/image
+import Image from 'next/image';
 
 interface Message {
   id: string;
   role: 'user' | 'model';
   content: string;
-  imageDataUri?: string; // Add to message type if you want to display sent images
+  imageDataUri?: string;
 }
 
 const promptSuggestions = [
@@ -27,8 +28,11 @@ const promptSuggestions = [
   "Generate a simple sword item",
 ];
 
+const DEFAULT_USER_NAME_FALLBACK = "User";
+const DEFAULT_AVATAR_FALLBACK = ""; // Or a placeholder URL
+
 interface ChatInterfaceProps {
-  resetKey?: number; // Prop to trigger chat reset
+  resetKey?: number;
 }
 
 export function ChatInterface({ resetKey }: ChatInterfaceProps) {
@@ -45,6 +49,8 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
+  const [userAvatar, setUserAvatar] = useState<string>(DEFAULT_AVATAR_FALLBACK);
+  const [userName, setUserName] = useState<string>(DEFAULT_USER_NAME_FALLBACK);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -60,6 +66,12 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       }
       setMessages(initialMessages);
       setShowWelcome(initialMessages.length === 0);
+
+      const storedAvatar = localStorage.getItem('bedrockAIUserAvatar');
+      const storedName = localStorage.getItem('bedrockAIUserName');
+      setUserAvatar(storedAvatar || DEFAULT_AVATAR_FALLBACK);
+      setUserName(storedName || DEFAULT_USER_NAME_FALLBACK);
+      
       if (initialMessages.length > 0) {
          setTimeout(() => inputRef.current?.focus(), 0);
       }
@@ -94,6 +106,11 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       clearImageSelection();
       if (typeof window !== 'undefined') {
         localStorage.removeItem('bedrockAIChatMessages');
+        // Re-fetch user details on reset as well, in case they changed
+        const storedAvatar = localStorage.getItem('bedrockAIUserAvatar');
+        const storedName = localStorage.getItem('bedrockAIUserName');
+        setUserAvatar(storedAvatar || DEFAULT_AVATAR_FALLBACK);
+        setUserName(storedName || DEFAULT_USER_NAME_FALLBACK);
       }
     }
   }, [resetKey]);
@@ -118,7 +135,6 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       };
       reader.readAsDataURL(file);
     }
-    // Clear the input value to allow re-selecting the same file
     if (event.target) {
       event.target.value = "";
     }
@@ -141,14 +157,14 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       currentMessageText = inputValue;
     }
 
-    if (!currentMessageText.trim() && !imageFile) return; // Allow sending image without text
+    if (!currentMessageText.trim() && !imageFile) return;
     if (showWelcome) setShowWelcome(false);
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
       content: currentMessageText,
-      ...(imagePreview && { imageDataUri: imagePreview }), // Include image if present
+      ...(imagePreview && { imageDataUri: imagePreview }),
     };
 
     setMessages((prevMessages) => [...prevMessages, userMessage]);
@@ -158,17 +174,15 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
     }
     setIsLoading(true);
     setError(null);
-    const currentImagePreview = imagePreview; // Capture current preview before clearing
-    clearImageSelection(); // Clear preview for next input
+    const currentImagePreview = imagePreview;
+    clearImageSelection();
 
     try {
       const historyForAI = messages
-        .filter(msg => msg.id !== userMessage.id) // Exclude the current message being sent from history
+        .filter(msg => msg.id !== userMessage.id)
         .map(msg => ({
           role: msg.role,
           parts: [{ text: msg.content }],
-          // We don't send historical images to the AI in this setup, only the current one.
-          // If historical image context is needed, the schema and logic would need to be more complex.
       }));
 
       const input: ChatInput = {
@@ -176,15 +190,33 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
         message: userMessage.content,
         ...(currentImagePreview && { imageDataUri: currentImagePreview }),
       };
-      const result = await invokeChat(input);
+      
+      const responseStream = await invokeChat(input);
+      const reader = responseStream.getReader();
+      const decoder = new TextDecoder();
+      let streamedContent = '';
+      const aiMessageId = (Date.now() + 1).toString();
 
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'model',
-        content: result.response,
-      };
-      setMessages((prevMessages) => [...prevMessages, aiMessage]);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { id: aiMessageId, role: 'model', content: '' }, // Start with empty content for streaming
+      ]);
+      setIsLoading(false); // Stop global loading indicator, typing happens per message
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const chunkText = decoder.decode(value, { stream: true });
+        streamedContent += chunkText;
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === aiMessageId ? { ...msg, content: streamedContent } : msg
+          )
+        );
+      }
+
     } catch (e) {
+      setIsLoading(false);
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
       setError(`Failed to get response: ${errorMessage}`);
       toast({
@@ -193,15 +225,16 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
         description: `Could not get response. ${errorMessage}`,
       });
       const aiErrorMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: (Date.now() + 1).toString(), // Ensure unique ID
         role: 'model',
         content: `Sorry, I encountered an error: ${errorMessage}`,
       };
       setMessages((prevMessages) => [...prevMessages, aiErrorMessage]);
     } finally {
-      setIsLoading(false);
+      // No longer setting isLoading to false here as it's handled earlier for streaming
       if (typeof eventOrMessage !== 'string' || messages.length === 0) {
-        inputRef.current?.focus();
+        // Re-focus might be tricky with streaming, ensure it's desired.
+        // inputRef.current?.focus(); 
       }
     }
   };
@@ -211,12 +244,10 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
       title: "Feedback Received",
       description: `Thank you for your ${feedbackType} feedback on message ${messageId}!`,
     });
-    // Here you could add logic to send this feedback to a server
   };
 
-  const inputBarHeight = "pb-[72px]"; // Default height
-  const inputBarHeightWithPreview = "pb-[152px]"; // Height when image preview is shown (72 + 80 for preview)
-
+  const inputBarHeight = "pb-[72px]";
+  const inputBarHeightWithPreview = "pb-[152px]";
 
   return (
     <div className={cn("flex flex-col h-full flex-grow w-full max-w-3xl mx-auto", imagePreview ? inputBarHeightWithPreview : inputBarHeight)}>
@@ -260,8 +291,6 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
                 <div
                   className={cn(
                     "max-w-[80%] p-3.5 rounded-2xl shadow-sm text-sm leading-relaxed",
-                    // Tailwind Typography prose classes for rich text formatting.
-                    // prose-pre:p-0 and prose-pre:bg-transparent ensure that CodeBlockDisplay takes full control of pre formatting.
                     "prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-code:text-sm",
                     message.role === 'user'
                       ? 'bg-primary text-primary-foreground rounded-br-none'
@@ -273,18 +302,23 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
                       <Image
                         src={message.imageDataUri}
                         alt="Uploaded image"
-                        width={200} // Adjust as needed
-                        height={200} // Adjust as needed
+                        width={200}
+                        height={200}
                         className="rounded-md object-contain max-h-48"
                       />
                     </div>
                   )}
                   <ChatMessageContent content={message.content} />
                 </div>
-                {message.role === 'user' && <UserCircle className="h-8 w-8 ml-3 mt-1 text-muted-foreground flex-shrink-0" />}
+                {message.role === 'user' && (
+                  <Avatar className="h-8 w-8 ml-3 mt-1 flex-shrink-0 border border-border">
+                    <AvatarImage src={userAvatar || undefined} alt={userName} data-ai-hint="profile person" />
+                    <AvatarFallback>{userName?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
+                  </Avatar>
+                )}
               </div>
-              {message.role === 'model' && (
-                <div className="flex items-center gap-1 mt-2 ml-11"> {/* Aligns with Bot icon + margin */}
+              {message.role === 'model' && message.content.length > 0 &&  ( // Show feedback only if model has content
+                <div className="flex items-center gap-1 mt-2 ml-11">
                   <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-primary" onClick={() => handleFeedback('positive', message.id)}>
                     <ThumbsUp className="h-4 w-4" />
                   </Button>
@@ -295,7 +329,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
               )}
             </div>
           ))}
-           {isLoading && messages[messages.length -1]?.role === 'user' && (
+           {isLoading && messages[messages.length -1]?.role === 'user' && ( // This loader is for initial submit before stream starts
             <div className="flex justify-start items-start mt-6">
                 <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />
                 <div className="max-w-[80%] p-3.5 rounded-2xl shadow-sm bg-secondary text-secondary-foreground rounded-bl-none flex items-center">
@@ -323,7 +357,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
               <Image
                 src={imagePreview}
                 alt="Selected preview"
-                layout="fill"
+                fill // Use fill for better responsive image handling within fixed parent
                 objectFit="cover"
                 className="rounded-md border border-border"
               />
@@ -374,7 +408,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask bedrock aí..."
               className="flex-grow bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground h-8 px-2"
-              disabled={isLoading}
+              disabled={isLoading} // Global isLoading can still disable input during initial phase of submit
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
                   e.preventDefault();
@@ -387,7 +421,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
             </Button>
             {inputValue.trim() || isLoading || imageFile ? (
               <Button type="submit" disabled={isLoading || (!inputValue.trim() && !imageFile)} size="icon" className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 w-8">
-                {isLoading ? (
+                {isLoading ? ( // This spinner will show briefly before streaming starts
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Send className="h-4 w-4" />
@@ -413,4 +447,3 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
     </div>
   );
 }
-

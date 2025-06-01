@@ -4,9 +4,9 @@
  * @fileOverview A conversational AI agent for Minecraft Bedrock Edition addon development.
  *
  * Exports:
- * - invokeChat: An async function that handles the chat interaction.
+ * - invokeChat: An async function that handles the chat interaction, returning a stream of responses.
  * - ChatInput: The type for the input to the invokeChat function.
- * - ChatOutput: The type for the return value of the invokeChat function.
+ * - ChatOutput: The type for the *fully formed* return value of the AI's generation.
  */
 
 import {ai} from '@/ai/genkit';
@@ -35,14 +35,10 @@ const ChatOutputSchema = z.object({
 });
 export type ChatOutput = z.infer<typeof ChatOutputSchema>;
 
-export async function invokeChat(input: ChatInput): Promise<ChatOutput> {
-  return chatFlow(input);
-}
-
-const prompt = ai.definePrompt({
+const bedrockChatPrompt = ai.definePrompt({
   name: 'bedrockChatPrompt',
   input: {schema: ChatInputSchema},
-  output: {schema: ChatOutputSchema},
+  output: {schema: ChatOutputSchema}, // Defines the structure of the full response
   prompt: `You are a friendly and expert Minecraft Bedrock Edition addon development assistant.
 Your goal is to help users create addon code, answer their questions about Bedrock addon development, and provide guidance.
 Use the provided conversation history to understand the context of the user's current message.
@@ -69,11 +65,41 @@ const chatFlow = ai.defineFlow(
   {
     name: 'bedrockChatFlow',
     inputSchema: ChatInputSchema,
-    outputSchema: ChatOutputSchema,
+    outputSchema: z.string().describe("A chunk of the AI assistant's streamed response."), // Schema for yielded chunks
   },
-  async (input: ChatInput) => {
-    const {output} = await prompt(input);
-    return output!;
+  async function* (input: ChatInput): AsyncGenerator<string> {
+    const {stream: responseStream} = bedrockChatPrompt.generateStream(input);
+
+    for await (const chunk of responseStream) {
+      // chunk.text provides the text content of the current generation step
+      if (chunk.text) {
+        yield chunk.text;
+      }
+      // If we needed to access structured output per chunk (based on ChatOutputSchema):
+      // else if (chunk.output && typeof chunk.output.response === 'string') {
+      //   yield chunk.output.response;
+      // }
+    }
   }
 );
 
+export async function invokeChat(input: ChatInput): Promise<ReadableStream<string>> {
+  const streamGenerator = chatFlow(input); // chatFlow(input) returns an AsyncGenerator<string>
+
+  return new ReadableStream<string>({
+    async start(controller) {
+      const encoder = new TextEncoder();
+      try {
+        for await (const chunk of streamGenerator) {
+          controller.enqueue(encoder.encode(chunk));
+        }
+      } catch (e) {
+        console.error("Streaming error in bedrockChatFlow execution:", e);
+        // Optionally, enqueue an error message or handle differently
+        controller.error(e instanceof Error ? e : new Error('Streaming failed'));
+      } finally {
+        controller.close();
+      }
+    },
+  });
+}
