@@ -53,37 +53,42 @@ export const CodeBlockDisplay: React.FC<CodeBlockDisplayProps> = ({ code, langua
 
   return (
     <div className="code-block-container relative group my-2">
-      {/* The pre tag creates the visual "box" for the code block */}
-      <pre className={cn(
-        "p-3 rounded-md overflow-x-auto bg-muted/70 text-sm",
-        langClass // Applies language-X for potential syntax highlighting by CSS/JS
+      {/* The main container for the code block with distinct styling */}
+      <div className={cn(
+        "p-4 rounded-lg overflow-x-auto bg-popover text-sm text-popover-foreground", 
+        // Removed langClass from here as it's better on pre/code for semantics
       )}>
-        <code className={cn(
-          "font-code", // Ensures monospace font
-          langClass
+        <pre className={cn(
+          "p-0 bg-transparent overflow-visible", // Reset prose styles for pre
+           langClass // Applies language-X for potential syntax highlighting by CSS/JS
         )}>
-          {code}
-        </code>
-      </pre>
-      <div className="absolute bottom-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 text-xs bg-background/50 hover:bg-background/70 p-1"
-          onClick={handleCopy}
-          title="Copy code"
-        >
-          <ClipboardCopy className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 text-xs bg-background/50 hover:bg-background/70 p-1"
-          onClick={handleDownload}
-          title="Download code"
-        >
-          <Download className="h-4 w-4" />
-        </Button>
+          <code className={cn(
+            "font-code whitespace-pre", // Ensures monospace font and preserves whitespace
+            langClass
+          )}>
+            {code}
+          </code>
+        </pre>
+        <div className="absolute bottom-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-xs bg-background/50 hover:bg-background/70 p-1 text-popover-foreground"
+            onClick={handleCopy}
+            title="Copy code"
+          >
+            <ClipboardCopy className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-xs bg-background/50 hover:bg-background/70 p-1 text-popover-foreground"
+            onClick={handleDownload}
+            title="Download code"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
