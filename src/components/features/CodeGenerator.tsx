@@ -35,7 +35,7 @@ interface ChatInterfaceProps {
   resetKey?: number;
 }
 
-const CHAT_AREA_MAX_WIDTH_CLASSES = "md:max-w-3xl lg:max-w-4xl xl:max-w-5xl";
+const CHAT_AREA_MAX_WIDTH_CLASSES = "md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl";
 
 export function ChatInterface({ resetKey }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);

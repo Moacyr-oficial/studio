@@ -31,7 +31,7 @@ export function Header() {
   return (
     <>
       <header className="py-3 px-4 md:px-6 sticky top-0 bg-background/80 backdrop-blur-md z-30">
-        <div className="w-full mx-auto flex items-center justify-between md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
+        <div className="w-full mx-auto flex items-center justify-between md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground">
               {isCurrentPanelOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
