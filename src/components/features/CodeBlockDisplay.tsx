@@ -53,9 +53,15 @@ export const CodeBlockDisplay: React.FC<CodeBlockDisplayProps> = ({ code, langua
 
   return (
     <div className="code-block-container relative group my-2">
-      {/* The parent div with prose class will style the pre and code tags */}
-      <pre className={cn("p-3 rounded-md overflow-x-auto bg-muted/70 text-sm", langClass)}>
-        <code className={cn("font-code", langClass)}>
+      {/* The pre tag creates the visual "box" for the code block */}
+      <pre className={cn(
+        "p-3 rounded-md overflow-x-auto bg-muted/70 text-sm",
+        langClass // Applies language-X for potential syntax highlighting by CSS/JS
+      )}>
+        <code className={cn(
+          "font-code", // Ensures monospace font
+          langClass
+        )}>
           {code}
         </code>
       </pre>

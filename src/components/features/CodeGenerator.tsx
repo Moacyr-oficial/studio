@@ -214,7 +214,9 @@ export function ChatInterface({ resetKey }: ChatInterfaceProps) {
                 <div
                   className={cn(
                     "max-w-[80%] p-3.5 rounded-2xl shadow-sm text-sm leading-relaxed",
-                    "prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-code:text-sm", // Adjusted prose for pre/code
+                    // Tailwind Typography prose classes for rich text formatting.
+                    // prose-pre:p-0 and prose-pre:bg-transparent ensure that CodeBlockDisplay takes full control of pre formatting.
+                    "prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-code:text-sm",
                     message.role === 'user'
                       ? 'bg-primary text-primary-foreground rounded-br-none'
                       : 'bg-secondary text-secondary-foreground rounded-bl-none'
