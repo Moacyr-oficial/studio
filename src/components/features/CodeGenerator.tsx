@@ -49,6 +49,14 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
 
   const isMobile = useIsMobile();
 
+  const clearImageSelection = useCallback(() => {
+    setImagePreview(null);
+    setImageFile(null);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
+    }
+  }, []);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedMessages = localStorage.getItem('bedrockAIChatMessages');
@@ -110,14 +118,6 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
       }
     }
   }, [resetKey, clearImageSelection]); 
-
-  const clearImageSelection = useCallback(() => {
-    setImagePreview(null);
-    setImageFile(null);
-    if (imageInputRef.current) {
-      imageInputRef.current.value = "";
-    }
-  }, []);
 
 
   const handleSubmit = useCallback(async (eventOrMessage?: FormEvent<HTMLFormElement> | string) => {
@@ -211,7 +211,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
     if (inputRef.current) inputRef.current.focus();
     setShowWelcome(false); 
     handleSubmit(suggestion);
-  }, [handleSubmit]); 
+  }, [handleSubmit, setShowWelcome]); 
 
   const handleImageButtonClick = useCallback(() => {
     imageInputRef.current?.click();
@@ -273,3 +273,4 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
 
 // Loader2 icon import needed for the loading state above
 import { Loader2 } from 'lucide-react';
+
