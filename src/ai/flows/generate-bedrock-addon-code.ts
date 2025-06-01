@@ -39,8 +39,8 @@ export type ChatOutput = z.infer<typeof ChatOutputSchema>;
 const bedrockChatPrompt = ai.definePrompt({
   name: 'bedrockChatPrompt',
   input: {schema: ChatInputSchema},
-  output: {schema: ChatOutputSchema},
-  model: 'googleai/gemini-2.0-flash', // Explicitly specify the model for the prompt
+  // output: {schema: ChatOutputSchema}, // Temporarily commented out for diagnosis
+  model: 'googleai/gemini-2.0-flash',
   prompt: `You are a friendly and expert Minecraft Bedrock Edition addon development assistant.
 Your goal is to help users create addon code, answer their questions about Bedrock addon development, and provide guidance.
 Use the provided conversation history to understand the context of the user's current message.
@@ -67,8 +67,11 @@ const chatFlow = ai.defineFlow(
   {
     name: 'bedrockChatFlow',
     inputSchema: ChatInputSchema,
-    outputSchema: ChatOutputSchema, // This describes the final data structure if the flow were to complete fully.
-                                   // For streaming, the actual return type of the function is ReadableStream<string>.
+    // The flow's output schema might ideally be z.string() if we only stream text,
+    // but invokeChat expects ReadableStream<string>, so the flow's direct return type
+    // (Promise<ReadableStream<string>>) is what matters most for the client.
+    // Keeping ChatOutputSchema here for now, as the error is at the prompt level.
+    outputSchema: ChatOutputSchema,
   },
   async (input: ChatInput): Promise<ReadableStream<string>> => {
     console.log('[chatFlow] Started with input:', input.message);
@@ -76,13 +79,10 @@ const chatFlow = ai.defineFlow(
     let promptResponsePromise: Promise<any>;
 
     try {
-      // This is the critical call that was failing.
-      // By adding `model` to bedrockChatPrompt, we hope .generateStream is now available.
       ({stream: promptStream, response: promptResponsePromise} = bedrockChatPrompt.generateStream(input));
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : String(e);
       console.error("[chatFlow] Error calling bedrockChatPrompt.generateStream:", errorMessage, e);
-      // Construct a stream that emits the error and then closes.
       return new ReadableStream<string>({
         start(controller) {
           controller.error(new Error(`Failed to start AI stream: ${errorMessage}`));
@@ -91,20 +91,21 @@ const chatFlow = ai.defineFlow(
     }
 
     const encoder = new TextEncoder();
-    let finalized = false; // Flag to ensure controller is finalized only once
+    let finalized = false; 
 
     const readableStream = new ReadableStream<string>({
       async start(controller) {
         console.log('[chatFlow_ReadableStream] Stream started.');
         try {
           for await (const chunk of promptStream) {
-            if (chunk?.output?.response) {
-              // console.log('[chatFlow_ReadableStream] Yielding chunk:', chunk.output.response);
-              controller.enqueue(encoder.encode(chunk.output.response));
+            // if (chunk?.output?.response) { // Old way, when prompt had output schema
+            //   controller.enqueue(encoder.encode(chunk.output.response));
+            // }
+            if (chunk?.text) { // New way: access chunk.text when prompt has no output schema
+              controller.enqueue(encoder.encode(chunk.text));
             }
           }
-          // After all chunks are processed, wait for the overall prompt response to complete
-          await promptResponsePromise;
+          await promptResponsePromise; // Wait for the full response to complete (resolves to {text: '...', usage: ...})
           console.log('[chatFlow_ReadableStream] Prompt stream and response promise finished successfully.');
           if (!finalized) {
             controller.close();
@@ -129,15 +130,12 @@ const chatFlow = ai.defineFlow(
 export async function invokeChat(input: ChatInput): Promise<ReadableStream<string>> {
   console.log('[invokeChat] Calling chatFlow with input:', input.message);
   try {
-    // chatFlow now directly returns the ReadableStream
     const stream = await chatFlow(input);
     console.log('[invokeChat] Received stream from chatFlow.');
     return stream;
   } catch (e) {
      const errorMessage = e instanceof Error ? e.message : 'Unknown error calling chatFlow';
      console.error('[invokeChat] Error calling chatFlow:', errorMessage, e);
-     // Return a stream that emits the error
-     // This is a fallback if chatFlow itself throws synchronously before returning a stream.
      return new ReadableStream<string>({
         start(controller) {
             controller.error(new Error(`Failed to initiate chat: ${errorMessage}`));
