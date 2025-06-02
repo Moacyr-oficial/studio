@@ -80,7 +80,7 @@ export function ChatInterfacePC({
 
   return (
     <div className={cn(
-      "flex flex-col h-full flex-grow w-full mx-auto bg-transparent", // Ensure background is transparent
+      "flex flex-col h-full flex-grow w-full mx-auto bg-transparent", 
       inputBarContainerHeight
     )}>
       {showWelcome && messages.length === 0 && (
@@ -89,7 +89,7 @@ export function ChatInterfacePC({
             <h1 className="text-4xl md:text-5xl font-bold mb-3 md:mb-4">
               <span
                 className="bg-clip-text text-transparent"
-                style={{ backgroundImage: 'linear-gradient(to right, hsl(var(--primary)), #db2777, hsl(var(--primary)), #f97316, hsl(var(--primary)), #db2777, hsl(var(--primary)), hsl(var(--muted-foreground)))' }}
+                 style={{ backgroundImage: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--muted-foreground)), hsl(var(--foreground)))' }}
               >
                 Hello, {userName || 'Developer'}!
               </span>
@@ -100,7 +100,7 @@ export function ChatInterfacePC({
       )}
 
       {!showWelcome && (
-         <div className="flex-grow flex flex-col overflow-hidden bg-transparent"> {/* Ensure background is transparent */}
+         <div className="flex-grow flex flex-col overflow-hidden bg-transparent"> 
             <div className="flex-grow overflow-hidden my-0 rounded-none border-none bg-transparent">
                 <ScrollArea ref={scrollAreaRef} className="h-full p-4 md:p-6">
                 {messages.map((message) => (
@@ -172,12 +172,12 @@ export function ChatInterfacePC({
             className={cn(
                 "p-4 fixed right-0 transform w-auto z-20",
                 fixedElementLeftOffsetClass,
-                CHAT_AREA_MAX_WIDTH_CLASSES_PC, // Ensure this also respects the overall max width
-                "mx-auto" // Center it within the available offset space
+                CHAT_AREA_MAX_WIDTH_CLASSES_PC, 
+                "mx-auto" 
             )}
             style={{ bottom: `${errorBottomOffset}px` }}
         >
-          <div className="max-w-3xl mx-auto"> {/* Inner container for alert content max-width */}
+          <div className="max-w-3xl mx-auto"> 
             <Alert variant="destructive" className="shadow-md">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Error</AlertTitle>
@@ -188,7 +188,7 @@ export function ChatInterfacePC({
       )}
 
       <div className={cn(
-        "fixed bottom-0 right-0 bg-transparent z-10", // Ensure background is transparent
+        "fixed bottom-0 right-0 bg-transparent z-10", 
         fixedElementLeftOffsetClass
       )}>
         <div className={cn(
@@ -250,7 +250,7 @@ export function ChatInterfacePC({
               ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask bedrock aí..."
+              placeholder="Ask Bedrock aí..."
               className="flex-grow bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-base placeholder:text-muted-foreground h-9 px-2"
               disabled={isLoading}
               onKeyDown={(e) => {
@@ -291,3 +291,4 @@ export function ChatInterfacePC({
     </div>
   );
 }
+
