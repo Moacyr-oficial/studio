@@ -45,9 +45,9 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
       setOpenMobile(false);
     }
     // On PC, if the sidebar is collapsed to icons, starting a new chat should expand it.
-    if (!isMobile && sidebarState === 'collapsed') {
-      setOpen(true);
-    }
+    // if (!isMobile && sidebarState === 'collapsed') { // This logic was moved to page.tsx
+    //   setOpen(true);
+    // }
   };
 
   const handleCloseMenuClick = () => {
@@ -76,11 +76,11 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
     <>
       <Sidebar
         side="left"
-        collapsible="icon" // Still allows collapsing to icons
+        collapsible="icon" 
         variant="sidebar"
-        className="z-40 rounded-r-none flex flex-col border-r border-sidebar-border" // Ensure border is visible
+        className="z-40 rounded-r-none flex flex-col border-r border-sidebar-border"
       >
-        <SidebarHeader className="p-2 border-b border-sidebar-border">
+        <SidebarHeader className="p-2">
           {/* "Close Menu" button - visible when sidebar is expanded */}
           <div className="group-data-[collapsible=icon]:hidden">
             <SidebarMenuButton
@@ -140,7 +140,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
                 </SidebarMenu>
             </div>
             
-            <SidebarSeparator className="group-data-[collapsible=icon]:hidden" />
+            {/* Removed SidebarSeparator from here */}
 
             {/* Recents Section */}
             <div className="px-2 pt-1 pb-1 group-data-[collapsible=icon]:hidden">

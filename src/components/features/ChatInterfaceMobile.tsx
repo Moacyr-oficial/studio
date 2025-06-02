@@ -83,9 +83,9 @@ export function ChatInterfaceMobile({
           <h1 className="text-4xl font-bold mb-3">
             <span
               className="bg-clip-text text-transparent"
-              style={{ backgroundImage: 'linear-gradient(to right, #7c3aed, #db2777)' }}
+              style={{ backgroundImage: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--muted-foreground)), hsl(var(--foreground)))' }}
             >
-              Hello!
+              Hello, {userName || 'Developer'}!
             </span>
           </h1>
           <p className="text-muted-foreground text-base mb-8">How can I help you with Minecraft Bedrock addons today?</p>
@@ -134,6 +134,7 @@ export function ChatInterfaceMobile({
                                 width={200}
                                 height={200}
                                 className="rounded-md object-contain max-h-48"
+                                data-ai-hint="user upload"
                             />
                             </div>
                         )}
@@ -191,6 +192,7 @@ export function ChatInterfaceMobile({
                 fill 
                 objectFit="cover"
                 className="rounded-md border border-border"
+                data-ai-hint="image preview"
               />
               <Button
                 variant="ghost"
