@@ -11,8 +11,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, Send, AlertTriangle, Bot, PlusCircle, Image as ImageIcon, Mic, Sparkles, ThumbsUp, ThumbsDown, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ChatMessageContent } from './ChatMessageContent';
-import type { Message } from './CodeGenerator'; 
-import { useSidebar } from '@/components/ui/sidebar'; // Added import
+import type { Message } from './CodeGenerator';
+import { useSidebar } from '@/components/ui/sidebar';
 
 interface ChatInterfacePCProps {
   messages: Message[];
@@ -42,7 +42,7 @@ interface ChatInterfacePCProps {
   promptSuggestions: string[];
 }
 
-const CHAT_AREA_MAX_WIDTH_CLASSES_PC = "md:max-w-screen-xl xl:max-w-screen-2xl"; 
+const CHAT_AREA_MAX_WIDTH_CLASSES_PC = "md:max-w-screen-xl xl:max-w-screen-2xl";
 
 export function ChatInterfacePC({
   messages,
@@ -60,30 +60,28 @@ export function ChatInterfacePC({
   setInputValue,
   setShowWelcome,
   handleSubmit,
-  handleSuggestionClick, 
+  handleSuggestionClick,
   handleImageButtonClick,
   handleImageChange,
   clearImageSelection,
   handleFeedback,
   promptSuggestions,
 }: ChatInterfacePCProps) {
-  const { state: sidebarState, isMobile } = useSidebar(); // Get sidebar state
+  const { state: sidebarState, isMobile } = useSidebar();
 
   const inputBarContainerHeight = imagePreview ? "pb-[152px]" : "pb-[90px]";
   const errorBottomOffset = imagePreview ? 152 : 90;
 
-  // Determine the correct left offset for fixed elements based on sidebar state
   const fixedElementLeftOffsetClass = isMobile
     ? "left-0"
     : sidebarState === 'expanded'
-    ? "left-[var(--sidebar-width)]" // 16rem
-    : "left-[var(--sidebar-width-icon)]"; // 3rem
+    ? "left-[var(--sidebar-width)]"
+    : "left-[var(--sidebar-width-icon)]";
 
   return (
     <div className={cn(
-      "flex flex-col h-full flex-grow w-full mx-auto",
-      CHAT_AREA_MAX_WIDTH_CLASSES_PC,
-      inputBarContainerHeight 
+      "flex flex-col h-full flex-grow w-full mx-auto bg-transparent", // Ensure background is transparent
+      inputBarContainerHeight
     )}>
       {showWelcome && messages.length === 0 && (
         <div className="flex-grow flex flex-col items-center justify-center p-4 md:p-6 text-center">
@@ -91,7 +89,7 @@ export function ChatInterfacePC({
             <h1 className="text-4xl md:text-5xl font-bold mb-3 md:mb-4">
               <span
                 className="bg-clip-text text-transparent"
-                style={{ backgroundImage: 'linear-gradient(to right, hsl(var(--primary)), #db2777)' }} 
+                style={{ backgroundImage: 'linear-gradient(to right, hsl(var(--primary)), #db2777, hsl(var(--primary)), #f97316, hsl(var(--primary)), #db2777, hsl(var(--primary)), hsl(var(--muted-foreground)))' }}
               >
                 Hello, {userName || 'Developer'}!
               </span>
@@ -102,8 +100,8 @@ export function ChatInterfacePC({
       )}
 
       {!showWelcome && (
-         <div className="flex-grow flex flex-col overflow-hidden">
-            <div className="flex-grow overflow-hidden my-0 rounded-none border-none bg-transparent"> 
+         <div className="flex-grow flex flex-col overflow-hidden bg-transparent"> {/* Ensure background is transparent */}
+            <div className="flex-grow overflow-hidden my-0 rounded-none border-none bg-transparent">
                 <ScrollArea ref={scrollAreaRef} className="h-full p-4 md:p-6">
                 {messages.map((message) => (
                     <div key={message.id} className="mb-6 max-w-3xl mx-auto">
@@ -116,11 +114,11 @@ export function ChatInterfacePC({
                         {message.role === 'model' && <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />}
                         <div
                         className={cn(
-                            "max-w-[85%] p-3.5 rounded-2xl shadow-sm text-sm leading-relaxed", 
+                            "max-w-[85%] p-3.5 rounded-2xl shadow-sm text-sm leading-relaxed",
                             "prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-code:text-sm",
                             message.role === 'user'
                             ? 'bg-primary text-primary-foreground rounded-br-none'
-                            : 'bg-secondary text-secondary-foreground rounded-bl-none' 
+                            : 'bg-secondary text-secondary-foreground rounded-bl-none'
                         )}
                         >
                         {message.imageDataUri && (
@@ -170,28 +168,32 @@ export function ChatInterfacePC({
       )}
 
       {error && (
-        <div 
+        <div
             className={cn(
-                "p-4 fixed right-0 transform w-auto z-20", // Use w-auto and allow left offset to manage width
-                fixedElementLeftOffsetClass
-            )} 
+                "p-4 fixed right-0 transform w-auto z-20",
+                fixedElementLeftOffsetClass,
+                CHAT_AREA_MAX_WIDTH_CLASSES_PC, // Ensure this also respects the overall max width
+                "mx-auto" // Center it within the available offset space
+            )}
             style={{ bottom: `${errorBottomOffset}px` }}
         >
-          <Alert variant="destructive" className="shadow-md max-w-3xl mx-auto">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+          <div className="max-w-3xl mx-auto"> {/* Inner container for alert content max-width */}
+            <Alert variant="destructive" className="shadow-md">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </div>
         </div>
       )}
-      
+
       <div className={cn(
-        "fixed bottom-0 right-0 bg-transparent z-10",
-        fixedElementLeftOffsetClass 
+        "fixed bottom-0 right-0 bg-transparent z-10", // Ensure background is transparent
+        fixedElementLeftOffsetClass
       )}>
         <div className={cn(
-            "w-full p-4 pt-2", 
-            CHAT_AREA_MAX_WIDTH_CLASSES_PC, // Constrain and center the content of the bar
+            "w-full p-4 pt-2",
+            CHAT_AREA_MAX_WIDTH_CLASSES_PC,
             "mx-auto"
         )}>
           {showWelcome && messages.length === 0 && (
@@ -229,7 +231,7 @@ export function ChatInterfacePC({
               </Button>
             </div>
           )}
-          
+
           <form onSubmit={handleSubmit} className="flex items-center gap-2 bg-secondary p-2 rounded-xl shadow-lg max-w-3xl mx-auto">
             <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-9 w-9">
               <PlusCircle className="h-5 w-5" />
@@ -289,4 +291,3 @@ export function ChatInterfacePC({
     </div>
   );
 }
-
