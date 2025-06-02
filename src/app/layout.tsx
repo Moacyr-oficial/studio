@@ -1,17 +1,12 @@
 
-"use client"; // Required for useState and useEffect
+"use client"; 
 
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useState, useEffect } from 'react';
-import { Code } from 'lucide-react'; // Import the Code icon
-
-// Metadata is typically defined outside the component in Next.js 13+ App Router
-// However, since we need client components for loading state, we keep it simple.
-// For server-side metadata, it would usually be:
-// export const metadata: Metadata = { ... }
+import { Code } from 'lucide-react'; 
 
 export default function RootLayout({
   children,
@@ -21,18 +16,11 @@ export default function RootLayout({
   const [isAppLoading, setIsAppLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate app loading time or simply set to false after mount
-    // For a real app, you might wait for certain data or scripts
     const timer = setTimeout(() => {
       setIsAppLoading(false);
-    }, 500); // Adjust delay as needed, or remove if loading is instant after mount
+    }, 500); 
     return () => clearTimeout(timer);
   }, []);
-
-  // It's better to define metadata at the top level for static export or if not using client hooks directly influencing it.
-  // If dynamic titles are needed based on client state, document.title in useEffect is an option.
-  // For this exercise, we'll keep the static metadata approach separate conceptually.
-  // You can create a separate component for dynamic metadata if needed.
 
   return (
     <html lang="en" className="dark" suppressHydrationWarning={true}>
@@ -45,13 +33,13 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased min-h-screen flex flex-col bg-background text-foreground">
+      <body className="font-body antialiased min-h-screen flex flex-col bg-background text-foreground overscroll-none"> {/* Added overscroll-none */}
         {isAppLoading ? (
           <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-background">
             <Code className="h-16 w-16 text-primary animate-pulse" />
           </div>
         ) : (
-          <SidebarProvider>
+          <SidebarProvider defaultOpen={false}> {/* Ensure sidebar starts collapsed on PC */}
             {children}
             <Toaster />
           </SidebarProvider>
@@ -60,12 +48,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-// If you want to ensure metadata is handled optimally, especially for SEO:
-// export const metadata: Metadata = {
-// title: 'bedrock aí',
-// description: 'Generate Minecraft Bedrock Edition addons with AI',
-// };
-// And then manage any dynamic title changes via useEffect in specific pages or a utility.
-// However, placing <title> and <meta> directly in <head> within a client component layout works for basic cases.
-

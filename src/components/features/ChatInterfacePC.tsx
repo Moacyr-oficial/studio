@@ -13,7 +13,6 @@ import { cn } from '@/lib/utils';
 import { ChatMessageContent } from './ChatMessageContent';
 import type { Message } from './CodeGenerator'; 
 
-// Props interface for PC specific chat display
 interface ChatInterfacePCProps {
   messages: Message[];
   inputValue: string;
@@ -42,8 +41,7 @@ interface ChatInterfacePCProps {
   promptSuggestions: string[];
 }
 
-const CHAT_AREA_MAX_WIDTH_CLASSES_PC = "md:max-w-screen-xl xl:max-w-screen-2xl";
-
+const CHAT_AREA_MAX_WIDTH_CLASSES_PC = "md:max-w-screen-xl xl:max-w-screen-2xl"; // Keep this for overall container
 
 export function ChatInterfacePC({
   messages,
@@ -69,48 +67,40 @@ export function ChatInterfacePC({
   promptSuggestions,
 }: ChatInterfacePCProps) {
 
-  const inputBarHeight = "pb-[72px]";
-  const inputBarHeightWithPreview = "pb-[152px]"; 
-  const errorBottomOffset = parseInt((imagePreview ? inputBarHeightWithPreview : inputBarHeight).replace('pb-[','').replace('px]',''));
+  const inputBarContainerHeight = imagePreview ? "pb-[152px]" : "pb-[90px]"; // Adjusted for new suggestion bar placement
+  const errorBottomOffset = imagePreview ? 152 : 90;
 
   return (
     <div className={cn(
       "flex flex-col h-full flex-grow w-full mx-auto",
       CHAT_AREA_MAX_WIDTH_CLASSES_PC,
-      imagePreview ? inputBarHeightWithPreview : inputBarHeight
+      inputBarContainerHeight // This class adds padding to the bottom of the main scrollable content area
     )}>
       {showWelcome && messages.length === 0 && (
         <div className="flex-grow flex flex-col items-center justify-center p-4 md:p-6 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 md:mb-4">
-            <span
-              className="bg-clip-text text-transparent"
-              style={{ backgroundImage: 'linear-gradient(to right, #7c3aed, #db2777)' }}
-            >
-              Hello!
-            </span>
-          </h1>
-          <p className="text-muted-foreground text-base md:text-lg mb-8 md:mb-12">How can I help you with Minecraft Bedrock addons today?</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full md:max-w-3xl lg:max-w-4xl">
-            {promptSuggestions.map((suggestion) => (
-              <Button
-                key={suggestion}
-                variant="ghost"
-                className="bg-secondary hover:bg-muted text-secondary-foreground text-left justify-start p-4 h-auto text-sm rounded-xl whitespace-normal"
-                onClick={() => handleSuggestionClick(suggestion)}
+          {/* Welcome message area takes most of the space */}
+          <div className="flex-grow flex flex-col items-center justify-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-3 md:mb-4">
+              <span
+                className="bg-clip-text text-transparent"
+                style={{ backgroundImage: 'linear-gradient(to right, hsl(var(--primary)), #db2777)' }} 
               >
-                {suggestion}
-              </Button>
-            ))}
+                Hello, {userName || 'Developer'}!
+              </span>
+            </h1>
+            <p className="text-muted-foreground text-base md:text-lg mb-8 md:mb-12">How can I help you with Minecraft Bedrock addons today?</p>
           </div>
+          {/* Prompt suggestions moved towards the bottom, above the input bar - handled by fixed positioning later */}
         </div>
       )}
 
       {!showWelcome && (
          <div className="flex-grow flex flex-col overflow-hidden">
-            <div className="flex-grow overflow-hidden my-4 rounded-xl border border-border bg-card">
-                <ScrollArea ref={scrollAreaRef} className="h-full p-6">
+            {/* Removed card styling from here: no bg-card, no border */}
+            <div className="flex-grow overflow-hidden my-0 rounded-none border-none bg-transparent"> 
+                <ScrollArea ref={scrollAreaRef} className="h-full p-4 md:p-6">
                 {messages.map((message) => (
-                    <div key={message.id} className="mb-6">
+                    <div key={message.id} className="mb-6 max-w-3xl mx-auto"> {/* Constrain message width */}
                     <div
                         className={cn(
                         "flex w-full items-start",
@@ -120,7 +110,7 @@ export function ChatInterfacePC({
                         {message.role === 'model' && <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />}
                         <div
                         className={cn(
-                            "max-w-[80%] p-3.5 rounded-2xl shadow-sm text-sm leading-relaxed",
+                            "max-w-[85%] p-3.5 rounded-2xl shadow-sm text-sm leading-relaxed", // Max width for message bubble
                             "prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-code:text-sm",
                             message.role === 'user'
                             ? 'bg-primary text-primary-foreground rounded-br-none'
@@ -161,9 +151,9 @@ export function ChatInterfacePC({
                     </div>
                 ))}
                 {isLoading && messages[messages.length -1]?.role === 'user' && (
-                    <div className="flex justify-start items-start mt-6">
+                    <div className="flex justify-start items-start mt-6 max-w-3xl mx-auto"> {/* Constrain loader width */}
                         <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />
-                        <div className="max-w-[80%] p-3.5 rounded-2xl shadow-sm bg-secondary text-secondary-foreground rounded-bl-none flex items-center">
+                        <div className="max-w-[85%] p-3.5 rounded-2xl shadow-sm bg-secondary text-secondary-foreground rounded-bl-none flex items-center">
                             <Loader2 className="h-5 w-5 animate-spin mr-2 text-primary" /> Thinking...
                         </div>
                     </div>
@@ -174,19 +164,36 @@ export function ChatInterfacePC({
       )}
 
       {error && (
-        <div className={cn("p-4 fixed left-1/2 transform -translate-x-1/2 w-full z-10", CHAT_AREA_MAX_WIDTH_CLASSES_PC)} style={{ bottom: `${errorBottomOffset}px` }}>
-          <Alert variant="destructive" className="shadow-md">
+        <div className={cn("p-4 fixed left-1/2 transform -translate-x-1/2 w-full z-20", CHAT_AREA_MAX_WIDTH_CLASSES_PC)} style={{ bottom: `${errorBottomOffset}px` }}>
+          <Alert variant="destructive" className="shadow-md max-w-3xl mx-auto">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         </div>
       )}
+      
+      {/* Input bar area including prompt suggestions for welcome screen */}
+      <div className={cn("fixed bottom-0 left-0 right-0 bg-transparent z-10", CHAT_AREA_MAX_WIDTH_CLASSES_PC, "mx-auto")}>
+        <div className={cn("w-full p-4 pt-2")}>
+          {/* Prompt suggestions row - only on welcome screen */}
+          {showWelcome && messages.length === 0 && (
+            <div className="flex flex-row gap-2 justify-center mb-3 overflow-x-auto no-scrollbar pb-1">
+              {promptSuggestions.slice(0, 4).map((suggestion) => (
+                <Button
+                  key={suggestion}
+                  variant="outline" // Gemini-like suggestion chip
+                  className="bg-secondary/80 hover:bg-secondary text-secondary-foreground border-border rounded-lg text-xs whitespace-nowrap px-3 py-1.5 h-auto"
+                  onClick={() => handleSuggestionClick(suggestion)}
+                >
+                  {suggestion}
+                </Button>
+              ))}
+            </div>
+          )}
 
-      <div className={cn("fixed bottom-0 left-0 right-0 bg-background z-10 border-t border-border")}>
-        <div className={cn("w-full mx-auto p-4", CHAT_AREA_MAX_WIDTH_CLASSES_PC)}>
           {imagePreview && (
-            <div className="relative mb-2 w-20 h-20">
+            <div className="relative mb-2 w-20 h-20 ml-2"> {/* Aligned with input bar padding */}
               <Image
                 src={imagePreview}
                 alt="Selected preview"
@@ -205,26 +212,10 @@ export function ChatInterfacePC({
               </Button>
             </div>
           )}
-          {!showWelcome && messages.length > 0 && messages.length < 10 && !isLoading && !imagePreview && (
-            <div className="flex gap-2 mt-6 mb-4 overflow-x-auto pb-2 no-scrollbar">
-              {promptSuggestions.filter(s => !messages.some(m => m.content === s)).slice(0,3).map((suggestion) => (
-                <Button
-                  key={suggestion}
-                  variant="outline"
-                  size="sm"
-                  className="bg-secondary hover:bg-muted text-xs whitespace-nowrap rounded-full border-muted px-3 py-1 h-auto"
-                  onClick={() => {
-                     handleSubmit(suggestion);
-                  }}
-                >
-                  {suggestion}
-                </Button>
-              ))}
-            </div>
-          )}
-          <form onSubmit={handleSubmit} className="flex items-center gap-2 bg-secondary p-1.5 rounded-xl shadow-sm">
-            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-8 w-8">
-              <PlusCircle className="h-4 w-4" />
+          
+          <form onSubmit={handleSubmit} className="flex items-center gap-2 bg-secondary p-2 rounded-xl shadow-lg max-w-3xl mx-auto">
+            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-9 w-9">
+              <PlusCircle className="h-5 w-5" />
             </Button>
             <input
               type="file"
@@ -233,15 +224,15 @@ export function ChatInterfacePC({
               onChange={handleImageChange}
               style={{ display: 'none' }}
             />
-            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-8 w-8" onClick={handleImageButtonClick}>
-              <ImageIcon className="h-4 w-4" />
+            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-9 w-9" onClick={handleImageButtonClick}>
+              <ImageIcon className="h-5 w-5" />
             </Button>
             <Input
               ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask bedrock aí..."
-              className="flex-grow bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground h-8 px-2"
+              className="flex-grow bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-base placeholder:text-muted-foreground h-9 px-2"
               disabled={isLoading}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
@@ -250,20 +241,20 @@ export function ChatInterfacePC({
                 }
               }}
             />
-            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-8 w-8">
-              <Mic className="h-4 w-4" />
+            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-9 w-9">
+              <Mic className="h-5 w-5" />
             </Button>
             {inputValue.trim() || isLoading || imageFile ? (
-              <Button type="submit" disabled={isLoading || (!inputValue.trim() && !imageFile)} size="icon" className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 w-8">
+              <Button type="submit" disabled={isLoading || (!inputValue.trim() && !imageFile)} size="icon" className="bg-primary hover:bg-primary/90 text-primary-foreground h-9 w-9">
                 {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <Send className="h-4 w-4" />
+                  <Send className="h-5 w-5" />
                 )}
               </Button>
             ) : (
-              <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-8 w-8">
-                <Sparkles className="h-4 w-4" />
+              <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-9 w-9">
+                <Sparkles className="h-5 w-5" />
               </Button>
             )}
           </form>
@@ -281,4 +272,3 @@ export function ChatInterfacePC({
     </div>
   );
 }
-
