@@ -13,8 +13,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarGroup,
-  // SidebarSeparator, // Removed as per request
-  // SidebarTrigger, // We'll use a custom button for "Close Menu"
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
@@ -44,10 +42,6 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
     if (isMobile) {
       setOpenMobile(false);
     }
-    // On PC, if the sidebar is collapsed to icons, starting a new chat should expand it.
-    // if (!isMobile && sidebarState === 'collapsed') { // This logic was moved to page.tsx
-    //   setOpen(true);
-    // }
   };
 
   const handleCloseMenuClick = () => {
@@ -78,7 +72,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
         side="left"
         collapsible="icon" 
         variant="sidebar"
-        className="z-40 rounded-r-none flex flex-col" // Removed border-r border-sidebar-border
+        className="z-40 flex flex-col" // Removed border-r-0, sidebar.tsx handles border now
       >
         <SidebarHeader className="p-2">
           {/* "Close Menu" button - visible when sidebar is expanded */}
@@ -140,15 +134,13 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
                 </SidebarMenu>
             </div>
             
-            {/* Removed SidebarSeparator from here */}
-
             {/* Recents Section */}
             <div className="px-2 pt-1 pb-1 group-data-[collapsible=icon]:hidden">
               <div className="px-2 pt-2 pb-1 text-xs font-medium tracking-wider text-sidebar-foreground/70">
                   RECENTS
               </div>
               <SidebarMenu>
-                  {historyItems.slice(0, 5).map((item) => ( // Show limited items initially
+                  {historyItems.slice(0, 5).map((item) => (
                   <SidebarMenuItem key={item.id} className="group/item">
                       <SidebarMenuButton
                           className="font-normal text-sm h-auto py-1.5 px-2 w-full justify-start"
@@ -181,7 +173,6 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
             </div>
         </SidebarContent>
         
-        {/* Removed SidebarSeparator from here */}
         <SidebarFooter className="p-2 group-data-[collapsible=icon]:p-0.5 group-data-[collapsible=icon]:pb-2">
             <SidebarMenuButton
                 variant="ghost"

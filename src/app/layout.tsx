@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning={true}>
       <head>
-        <title>bedrock aí</title>
+        <title>Bedrock aí</title>
         <meta name="description" content="Generate Minecraft Bedrock Edition addons with AI" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -39,7 +39,7 @@ export default function RootLayout({
             <Code className="h-16 w-16 text-primary animate-pulse" />
           </div>
         ) : (
-          <SidebarProvider defaultOpen={true}> {/* Changed: Sidebar open by default on PC */}
+          <SidebarProvider defaultOpen={true}> {/* Sidebar open by default on PC */}
             {children}
             <Toaster />
           </SidebarProvider>
