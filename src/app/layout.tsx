@@ -33,13 +33,13 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased min-h-screen flex flex-col bg-background text-foreground overscroll-none"> {/* Added overscroll-none */}
+      <body className="font-body antialiased min-h-screen flex flex-col bg-background text-foreground overscroll-none">
         {isAppLoading ? (
           <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-background">
             <Code className="h-16 w-16 text-primary animate-pulse" />
           </div>
         ) : (
-          <SidebarProvider defaultOpen={false}> {/* Ensure sidebar starts collapsed on PC */}
+          <SidebarProvider defaultOpen={true}> {/* Changed: Sidebar open by default on PC */}
             {children}
             <Toaster />
           </SidebarProvider>
