@@ -58,7 +58,7 @@ const SidebarProvider = React.forwardRef<
 >(
   (
     {
-      defaultOpen = true, 
+      defaultOpen = false, // Changed default to false
       open: openProp,
       onOpenChange: setOpenProp,
       className,
@@ -111,6 +111,8 @@ const SidebarProvider = React.forwardRef<
       window.addEventListener("keydown", handleKeyDown)
       return () => window.removeEventListener("keydown", handleKeyDown)
     }, [toggleSidebar])
+
+    // Removed useEffect that reads cookie for initial state
 
     const state = open ? "expanded" : "collapsed"
 
@@ -241,11 +243,8 @@ const Sidebar = React.forwardRef<
             variant === "floating" || variant === "inset" // Floating or Inset variant
               ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]" 
               : cn( // Default "sidebar" variant
-                  "group-data-[collapsible=icon]:w-[--sidebar-width-icon]", // Collapsed width for icon style
-                  { // Conditional borders only when expanded
-                    "group-data-[state=expanded]:group-data-[side=left]:border-r": side === "left",
-                    "group-data-[state=expanded]:group-data-[side=right]:border-l": side === "right",
-                  }
+                  "group-data-[collapsible=icon]:w-[--sidebar-width-icon]" // Collapsed width for icon style
+                  // Removed conditional border for expanded state
                 ),
             className
           )}
