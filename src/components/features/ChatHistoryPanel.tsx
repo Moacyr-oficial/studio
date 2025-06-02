@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Rabbit, ToyBrick, Map as MapIcon, Trash2, Menu, Settings, ExternalLink } from 'lucide-react';
+import { GoogleIcon } from '@/components/icons/GoogleIcon'; // Import GoogleIcon
 import {
   Sidebar,
   SidebarContent,
@@ -64,6 +65,12 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
     { id: "entity-gen", title: "Entity Generator", icon: Rabbit, action: handleNewChatClick },
     { id: "behavior-helper", title: "Behavior Pack Helper", icon: ToyBrick, action: handleNewChatClick },
     { id: "world-builder", title: "World Builder", icon: MapIcon, action: handleNewChatClick },
+    {
+      id: "google-services",
+      title: "Google Services",
+      icon: GoogleIcon,
+      action: () => toast({ title: "Google Services", description: "This is a placeholder for Google services integration." })
+    }
   ];
 
   return (
@@ -72,7 +79,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
         side="left"
         collapsible="icon" 
         variant="sidebar"
-        className="z-40 flex flex-col" // Removed border-r-0, sidebar.tsx handles border now
+        className="z-40 flex flex-col" 
       >
         <SidebarHeader className="p-2">
           {/* "Close Menu" button - visible when sidebar is expanded */}
