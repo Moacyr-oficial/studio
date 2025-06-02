@@ -27,6 +27,12 @@ export default function RootLayout({
       <head>
         <title>Bedrock aí</title>
         <meta name="description" content="Generate Minecraft Bedrock Edition addons with AI" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#3B82F6" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Bedrock aí" />
+        <link rel="apple-touch-icon" href="https://placehold.co/180x180.png" data-ai-hint="app icon" /> 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
