@@ -12,6 +12,7 @@ import { Loader2, Send, AlertTriangle, Bot, PlusCircle, Image as ImageIcon, Mic,
 import { cn } from '@/lib/utils';
 import { ChatMessageContent } from './ChatMessageContent';
 import type { Message } from './CodeGenerator'; 
+import { useSidebar } from '@/components/ui/sidebar'; // Added import
 
 interface ChatInterfacePCProps {
   messages: Message[];
@@ -41,7 +42,7 @@ interface ChatInterfacePCProps {
   promptSuggestions: string[];
 }
 
-const CHAT_AREA_MAX_WIDTH_CLASSES_PC = "md:max-w-screen-xl xl:max-w-screen-2xl"; // Keep this for overall container
+const CHAT_AREA_MAX_WIDTH_CLASSES_PC = "md:max-w-screen-xl xl:max-w-screen-2xl"; 
 
 export function ChatInterfacePC({
   messages,
@@ -66,19 +67,26 @@ export function ChatInterfacePC({
   handleFeedback,
   promptSuggestions,
 }: ChatInterfacePCProps) {
+  const { state: sidebarState, isMobile } = useSidebar(); // Get sidebar state
 
-  const inputBarContainerHeight = imagePreview ? "pb-[152px]" : "pb-[90px]"; // Adjusted for new suggestion bar placement
+  const inputBarContainerHeight = imagePreview ? "pb-[152px]" : "pb-[90px]";
   const errorBottomOffset = imagePreview ? 152 : 90;
+
+  // Determine the correct left offset for fixed elements based on sidebar state
+  const fixedElementLeftOffsetClass = isMobile
+    ? "left-0"
+    : sidebarState === 'expanded'
+    ? "left-[var(--sidebar-width)]" // 16rem
+    : "left-[var(--sidebar-width-icon)]"; // 3rem
 
   return (
     <div className={cn(
       "flex flex-col h-full flex-grow w-full mx-auto",
       CHAT_AREA_MAX_WIDTH_CLASSES_PC,
-      inputBarContainerHeight // This class adds padding to the bottom of the main scrollable content area
+      inputBarContainerHeight 
     )}>
       {showWelcome && messages.length === 0 && (
         <div className="flex-grow flex flex-col items-center justify-center p-4 md:p-6 text-center">
-          {/* Welcome message area takes most of the space */}
           <div className="flex-grow flex flex-col items-center justify-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-3 md:mb-4">
               <span
@@ -90,17 +98,15 @@ export function ChatInterfacePC({
             </h1>
             <p className="text-muted-foreground text-base md:text-lg mb-8 md:mb-12">How can I help you with Minecraft Bedrock addons today?</p>
           </div>
-          {/* Prompt suggestions moved towards the bottom, above the input bar - handled by fixed positioning later */}
         </div>
       )}
 
       {!showWelcome && (
          <div className="flex-grow flex flex-col overflow-hidden">
-            {/* Removed card styling from here: no bg-card, no border */}
             <div className="flex-grow overflow-hidden my-0 rounded-none border-none bg-transparent"> 
                 <ScrollArea ref={scrollAreaRef} className="h-full p-4 md:p-6">
                 {messages.map((message) => (
-                    <div key={message.id} className="mb-6 max-w-3xl mx-auto"> {/* Constrain message width */}
+                    <div key={message.id} className="mb-6 max-w-3xl mx-auto">
                     <div
                         className={cn(
                         "flex w-full items-start",
@@ -110,7 +116,7 @@ export function ChatInterfacePC({
                         {message.role === 'model' && <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />}
                         <div
                         className={cn(
-                            "max-w-[85%] p-3.5 rounded-2xl shadow-sm text-sm leading-relaxed", // Max width for message bubble
+                            "max-w-[85%] p-3.5 rounded-2xl shadow-sm text-sm leading-relaxed", 
                             "prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-code:text-sm",
                             message.role === 'user'
                             ? 'bg-primary text-primary-foreground rounded-br-none'
@@ -151,7 +157,7 @@ export function ChatInterfacePC({
                     </div>
                 ))}
                 {isLoading && messages[messages.length -1]?.role === 'user' && (
-                    <div className="flex justify-start items-start mt-6 max-w-3xl mx-auto"> {/* Constrain loader width */}
+                    <div className="flex justify-start items-start mt-6 max-w-3xl mx-auto">
                         <Bot className="h-8 w-8 mr-3 mt-1 text-primary flex-shrink-0" />
                         <div className="max-w-[85%] p-3.5 rounded-2xl shadow-sm bg-secondary text-secondary-foreground rounded-bl-none flex items-center">
                             <Loader2 className="h-5 w-5 animate-spin mr-2 text-primary" /> Thinking...
@@ -164,7 +170,13 @@ export function ChatInterfacePC({
       )}
 
       {error && (
-        <div className={cn("p-4 fixed left-1/2 transform -translate-x-1/2 w-full z-20", CHAT_AREA_MAX_WIDTH_CLASSES_PC)} style={{ bottom: `${errorBottomOffset}px` }}>
+        <div 
+            className={cn(
+                "p-4 fixed right-0 transform w-auto z-20", // Use w-auto and allow left offset to manage width
+                fixedElementLeftOffsetClass
+            )} 
+            style={{ bottom: `${errorBottomOffset}px` }}
+        >
           <Alert variant="destructive" className="shadow-md max-w-3xl mx-auto">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
@@ -173,16 +185,21 @@ export function ChatInterfacePC({
         </div>
       )}
       
-      {/* Input bar area including prompt suggestions for welcome screen */}
-      <div className={cn("fixed bottom-0 left-0 right-0 bg-transparent z-10", CHAT_AREA_MAX_WIDTH_CLASSES_PC, "mx-auto")}>
-        <div className={cn("w-full p-4 pt-2")}>
-          {/* Prompt suggestions row - only on welcome screen */}
+      <div className={cn(
+        "fixed bottom-0 right-0 bg-transparent z-10",
+        fixedElementLeftOffsetClass 
+      )}>
+        <div className={cn(
+            "w-full p-4 pt-2", 
+            CHAT_AREA_MAX_WIDTH_CLASSES_PC, // Constrain and center the content of the bar
+            "mx-auto"
+        )}>
           {showWelcome && messages.length === 0 && (
-            <div className="flex flex-row gap-2 justify-center mb-3 overflow-x-auto no-scrollbar pb-1">
+            <div className="flex flex-row gap-2 justify-center mb-3 overflow-x-auto no-scrollbar pb-1 md:max-w-3xl lg:max-w-4xl mx-auto">
               {promptSuggestions.slice(0, 4).map((suggestion) => (
                 <Button
                   key={suggestion}
-                  variant="outline" // Gemini-like suggestion chip
+                  variant="outline"
                   className="bg-secondary/80 hover:bg-secondary text-secondary-foreground border-border rounded-lg text-xs whitespace-nowrap px-3 py-1.5 h-auto"
                   onClick={() => handleSuggestionClick(suggestion)}
                 >
@@ -193,7 +210,7 @@ export function ChatInterfacePC({
           )}
 
           {imagePreview && (
-            <div className="relative mb-2 w-20 h-20 ml-2"> {/* Aligned with input bar padding */}
+            <div className="relative mb-2 w-20 h-20 ml-2">
               <Image
                 src={imagePreview}
                 alt="Selected preview"
@@ -272,3 +289,4 @@ export function ChatInterfacePC({
     </div>
   );
 }
+
