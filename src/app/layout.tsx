@@ -32,8 +32,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Bedrock aí" />
-        <link rel="apple-touch-icon" href="https://placehold.co/180x180.png" data-ai-hint="app icon" /> 
-        <link rel="icon" href="https://placehold.co/48x48.png" type="image/png" data-ai-hint="app icon" />
+        <link rel="apple-touch-icon" href="https://placehold.co/180x180.png" data-ai-hint="code symbol" /> 
+        <link rel="icon" href="https://placehold.co/48x48.png" type="image/png" data-ai-hint="code symbol" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -49,7 +49,7 @@ export default function RootLayout({
               width={64}
               height={64}
               className="animate-pulse"
-              data-ai-hint="app logo"
+              data-ai-hint="code symbol"
               priority // Preload the loading image
             />
           </div>
