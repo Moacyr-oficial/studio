@@ -6,7 +6,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useState, useEffect } from 'react';
-import { Code } from 'lucide-react'; 
+import Image from 'next/image'; 
 
 export default function RootLayout({
   children,
@@ -43,7 +43,15 @@ export default function RootLayout({
       <body className="font-body antialiased min-h-screen flex flex-col bg-background text-foreground overscroll-none">
         {isAppLoading ? (
           <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-background">
-            <Code className="h-16 w-16 text-primary animate-pulse" />
+            <Image
+              src="https://placehold.co/64x64.png"
+              alt="Loading app icon"
+              width={64}
+              height={64}
+              className="animate-pulse"
+              data-ai-hint="app logo"
+              priority // Preload the loading image
+            />
           </div>
         ) : (
           <SidebarProvider defaultOpen={true}> {/* Sidebar open by default on PC */}
