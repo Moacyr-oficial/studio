@@ -66,10 +66,10 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
     { id: "behavior-helper", title: "Behavior Pack Helper", icon: ToyBrick, action: handleNewChatClick },
     { id: "world-builder", title: "World Builder", icon: MapIcon, action: handleNewChatClick },
     {
-      id: "google-services",
-      title: "Google Services",
+      id: "google-services-android",
+      title: "Google service for Android app",
       icon: GoogleIcon,
-      action: () => toast({ title: "Google Services", description: "This is a placeholder for Google services integration." })
+      action: () => toast({ title: "Google service for Android", description: "This is a placeholder for Android Google services integration." })
     }
   ];
 
@@ -196,3 +196,4 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
     </>
   );
 }
+
