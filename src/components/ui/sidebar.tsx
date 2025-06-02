@@ -58,7 +58,7 @@ const SidebarProvider = React.forwardRef<
 >(
   (
     {
-      defaultOpen = false, // Changed default to false
+      defaultOpen = true, 
       open: openProp,
       onOpenChange: setOpenProp,
       className,
@@ -112,7 +112,6 @@ const SidebarProvider = React.forwardRef<
       return () => window.removeEventListener("keydown", handleKeyDown)
     }, [toggleSidebar])
 
-    // Removed useEffect that reads cookie for initial state
 
     const state = open ? "expanded" : "collapsed"
 
@@ -222,7 +221,6 @@ const Sidebar = React.forwardRef<
         data-variant={variant}
         data-side={side}
       >
-        {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
             "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
@@ -239,12 +237,10 @@ const Sidebar = React.forwardRef<
             side === "left"
               ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
               : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
-            // Adjust the padding for floating and inset variants.
-            variant === "floating" || variant === "inset" // Floating or Inset variant
+            variant === "floating" || variant === "inset" 
               ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]" 
-              : cn( // Default "sidebar" variant
-                  "group-data-[collapsible=icon]:w-[--sidebar-width-icon]" // Collapsed width for icon style
-                  // Removed conditional border for expanded state
+              : cn( 
+                  "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
                 ),
             className
           )}
@@ -252,7 +248,10 @@ const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
+            className={cn(
+              "flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow",
+              variant === "floating" && "group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border" // Border only for floating
+            )}
           >
             {children}
           </div>
@@ -266,8 +265,9 @@ Sidebar.displayName = "Sidebar"
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
->(({ className, onClick, children, ...props }, ref) => { // Added children prop
-  const { toggleSidebar } = useSidebar()
+>(({ className, onClick, children, ...props }, ref) => {
+  const { toggleSidebar } = useSidebar();
+  const isAsChild = !!props.asChild; 
 
   return (
     <Button
@@ -275,18 +275,24 @@ const SidebarTrigger = React.forwardRef<
       data-sidebar="trigger"
       variant="ghost"
       size="icon"
-      className={cn("h-7 w-7 p-0", className)} // Ensure p-0 for icon buttons
+      className={cn("h-7 w-7 p-0", className)}
       onClick={(event) => {
-        onClick?.(event)
-        toggleSidebar()
+        onClick?.(event);
+        toggleSidebar();
       }}
-      {...props}
+      {...props} 
     >
-      {children || <PanelLeft />} {/* Use children if provided, else default icon */}
-      <span className="sr-only">Toggle Sidebar</span>
+      {isAsChild ? (
+        children 
+      ) : (
+        <>
+          {children || <PanelLeft />}
+          <span className="sr-only">Toggle Sidebar</span>
+        </>
+      )}
     </Button>
-  )
-})
+  );
+});
 SidebarTrigger.displayName = "SidebarTrigger"
 
 const SidebarRail = React.forwardRef<
