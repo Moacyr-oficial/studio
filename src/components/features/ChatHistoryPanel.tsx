@@ -13,7 +13,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarGroup,
-  SidebarSeparator,
+  // SidebarSeparator, // Removed as per request
   // SidebarTrigger, // We'll use a custom button for "Close Menu"
   useSidebar,
 } from '@/components/ui/sidebar';
@@ -78,7 +78,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
         side="left"
         collapsible="icon" 
         variant="sidebar"
-        className="z-40 rounded-r-none flex flex-col border-r border-sidebar-border"
+        className="z-40 rounded-r-none flex flex-col" // Removed border-r border-sidebar-border
       >
         <SidebarHeader className="p-2">
           {/* "Close Menu" button - visible when sidebar is expanded */}
@@ -181,7 +181,7 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
             </div>
         </SidebarContent>
         
-        <SidebarSeparator />
+        {/* Removed SidebarSeparator from here */}
         <SidebarFooter className="p-2 group-data-[collapsible=icon]:p-0.5 group-data-[collapsible=icon]:pb-2">
             <SidebarMenuButton
                 variant="ghost"
