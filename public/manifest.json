@@ -1,0 +1,26 @@
+{
+  "name": "Bedrock aí",
+  "short_name": "Bedrock aí",
+  "description": "Generate Minecraft Bedrock Edition addons with AI",
+  "icons": [
+    {
+      "src": "https://placehold.co/192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable",
+      "data-ai-hint": "code symbol"
+    },
+    {
+      "src": "https://placehold.co/512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable",
+      "data-ai-hint": "code symbol"
+    }
+  ],
+  "theme_color": "#3B82F6",
+  "background_color": "#111827",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait"
+}
