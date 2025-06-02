@@ -40,10 +40,8 @@ export function Header({ pageTitle }: HeaderProps) {
         <div className="w-full mx-auto flex items-center justify-between md:max-w-screen-xl xl:max-w-screen-2xl">
           <div className="flex items-center gap-2">
             {isMobile && (
-              <SidebarTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-foreground">
-                  <Menu className="h-5 w-5" />
-                </Button>
+              <SidebarTrigger asChild className="h-7 w-7">
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-foreground"><Menu className="h-5 w-5" /></Button>
               </SidebarTrigger>
             )}
              <h1 className="text-lg md:text-xl font-headline font-semibold tracking-tight truncate">
