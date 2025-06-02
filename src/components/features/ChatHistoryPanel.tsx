@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Rabbit, ToyBrick, Map as MapIcon, Trash2, Menu, Settings, ExternalLink } from 'lucide-react';
-import { GoogleIcon } from '@/components/icons/GoogleIcon'; // Import GoogleIcon
+// import { GoogleIcon } from '@/components/icons/GoogleIcon'; // No longer needed
 import {
   Sidebar,
   SidebarContent,
@@ -65,12 +65,12 @@ export function ChatHistoryPanel({ onNewChat }: ChatHistoryPanelProps) {
     { id: "entity-gen", title: "Entity Generator", icon: Rabbit, action: handleNewChatClick },
     { id: "behavior-helper", title: "Behavior Pack Helper", icon: ToyBrick, action: handleNewChatClick },
     { id: "world-builder", title: "World Builder", icon: MapIcon, action: handleNewChatClick },
-    {
-      id: "google-services-android",
-      title: "Google service for Android app",
-      icon: GoogleIcon,
-      action: () => toast({ title: "Google service for Android", description: "This is a placeholder for Android Google services integration." })
-    }
+    // {
+    //   id: "google-services-android",
+    //   title: "Google service for Android app",
+    //   icon: GoogleIcon, // GoogleIcon import was removed
+    //   action: () => toast({ title: "Google service for Android", description: "This is a placeholder for Android Google services integration." })
+    // }
   ];
 
   return (
