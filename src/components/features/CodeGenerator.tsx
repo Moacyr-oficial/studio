@@ -8,7 +8,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ChatInterfacePC } from './ChatInterfacePC';
 import { ChatInterfaceMobile } from './ChatInterfaceMobile';
 
-// Keep Message interface and other constants here if they are shared or move to a types file
 export interface Message {
   id: string;
   role: 'user' | 'model';
@@ -28,9 +27,10 @@ const DEFAULT_AVATAR_FALLBACK = "";
 
 interface ChatInterfaceContainerProps {
   resetKey?: number;
+  onChatStart?: (firstUserMessageContent: string) => void;
 }
 
-export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
+export function ChatInterface({ resetKey, onChatStart }: ChatInterfaceContainerProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -71,6 +71,13 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
       }
       setMessages(initialMessages);
       setShowWelcome(initialMessages.length === 0);
+      if (initialMessages.length > 0 && onChatStart && initialMessages.some(m => m.role === 'user')) {
+        const firstUserMsg = initialMessages.find(m => m.role === 'user');
+        if (firstUserMsg) {
+            onChatStart(firstUserMsg.content);
+        }
+      }
+
 
       const storedAvatar = localStorage.getItem('bedrockAIUserAvatar');
       const storedName = localStorage.getItem('bedrockAIUserName');
@@ -81,7 +88,8 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
          setTimeout(() => inputRef.current?.focus(), 0);
       }
     }
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // onChatStart dependency removed to avoid issues with it changing on page.tsx re-renders
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -130,6 +138,9 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
     }
 
     if (!currentMessageText.trim() && !imageFile) return;
+    
+    const isFirstUserMessageInSession = messages.filter(m => m.role === 'user').length === 0;
+
     if (showWelcome) setShowWelcome(false);
 
     const userMessage: Message = {
@@ -138,6 +149,10 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
       content: currentMessageText,
       ...(imagePreview && { imageDataUri: imagePreview }),
     };
+
+    if (isFirstUserMessageInSession && onChatStart) {
+      onChatStart(userMessage.content);
+    }
 
     setMessages((prevMessages) => [...prevMessages, userMessage]);
 
@@ -205,13 +220,13 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
       };
       setMessages((prevMessages) => [...prevMessages, aiErrorMessage]);
     }
-  }, [inputValue, imageFile, imagePreview, showWelcome, messages, toast, clearImageSelection]);
+  }, [inputValue, imageFile, imagePreview, showWelcome, messages, toast, clearImageSelection, onChatStart]);
 
   const handleSuggestionClick = useCallback((suggestion: string) => {
     if (inputRef.current) inputRef.current.focus();
-    setShowWelcome(false); 
+    // setShowWelcome is handled by handleSubmit logic if showWelcome is true
     handleSubmit(suggestion);
-  }, [handleSubmit, setShowWelcome]); 
+  }, [handleSubmit]); 
 
   const handleImageButtonClick = useCallback(() => {
     imageInputRef.current?.click();
@@ -257,7 +272,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
     scrollAreaRef,
     imageInputRef,
     setInputValue,
-    setMessages, 
+    // setMessages, // Not directly passed; managed internally or via callbacks
     handleSubmit,
     handleSuggestionClick,
     handleImageButtonClick,
@@ -265,7 +280,7 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
     clearImageSelection,
     handleFeedback,
     promptSuggestions,
-    setShowWelcome, 
+    setShowWelcome, // Passed to allow direct manipulation if needed by children
   };
 
   return isMobile ? <ChatInterfaceMobile {...displayProps} /> : <ChatInterfacePC {...displayProps} />;
@@ -273,4 +288,3 @@ export function ChatInterface({ resetKey }: ChatInterfaceContainerProps) {
 
 // Loader2 icon import needed for the loading state above
 import { Loader2 } from 'lucide-react';
-
